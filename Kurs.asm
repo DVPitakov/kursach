@@ -99,8 +99,22 @@ INIT_INTERRUPT:
 	ldi ZH, HIGH(MEM_START) 
 	ldi temp, 0x01 
 	rcall INIT_VARIABLES
-	ldi temp, 0x03
-	rcall DRAW_CURRENT_TIME
+	
+	;**test
+	ldi ZL, LOW(MEM_START)
+	ldi ZH, HIGH(MEM_START)
+	ldi temp, 25
+	std Z+1 + 0 * STRUCT_LEN, temp
+	ldi temp, 50
+	std Z+1 + 1 * STRUCT_LEN, temp
+	ldi temp, 75
+	std Z+1 + 2 * STRUCT_LEN, temp
+
+	ldi temp, 0
+	rcall DRAW_PORTION
+	;**test
+	;ldi temp, 0
+	;rcall DRAW_CURRENT_TIME
 
 	ldi temp0, 0x00 
 	ldi temp2, 0x01
@@ -186,7 +200,7 @@ MINUS16_END:
 	ret 
 
 ;temp from what
-DRAW_PROPOTION:
+DRAW_PORTION:
 	push ZL
 	push ZH
 	push temp1
@@ -203,8 +217,8 @@ DRAW_PROPOTION:
 	ldd temp2,Z + 0 * STRUCT_LEN + 2
 	ldd temp3,Z + 1 * STRUCT_LEN + 1
 	ldd temp4,Z + 1 * STRUCT_LEN + 2
-	ldd temp5,Z + 2 * STRUCT_LEN + 3
-	ldd temp6,Z + 2 * STRUCT_LEN + 4
+	ldd temp5,Z + 2 * STRUCT_LEN + 1
+	ldd temp6,Z + 2 * STRUCT_LEN + 2
 	std Z+(5 * STRUCT_LEN + 0), temp1 
 	std Z+(5 * STRUCT_LEN + 1), temp2 
 	std Z+(5 * STRUCT_LEN + 2), temp3 
@@ -237,6 +251,7 @@ draw_propotion_adding_end:
 	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START) 
 	std Z+0, temp1
 	std Z+1, temp2
+	rcall DIVIDE_FLOAT
 	rcall FLOAT_16_TO_STR 
 	ldi temp5, 0x00
 	rcall DRAW2
@@ -716,9 +731,9 @@ FLOAT_16_TO_STR:
 
 	std Z+0, temp4
 	std Z+1, temp3
-	std Z+2, temp2
 	ldi temp, ','
-	std Z+3, temp
+	std Z+2, temp
+	std Z+3, temp2
 	std Z+4, temp1
 	ldi temp, '%'
 	std Z+5, temp
@@ -753,15 +768,12 @@ divide_float_circle:
 	rol temp1
 	rcall DIFERENCE16 
 	brcc recov_float
-	push temp
-	ldi temp, 0x80
-	add temp5, temp
-	pop temp
+	inc temp5
 divide_float_circle_tail:
 	dec temp 
 	breq divide_float_circle_end
-	lsr temp5
-	ror temp6
+	lsl temp6
+	rol temp5
 	rjmp divide_float_circle
 divide_float_circle_end:
 	std Z+0, temp5
@@ -877,6 +889,8 @@ mul16_end:
 mul16_add:
 	add temp6, temp2
 	adc temp5, temp1
+	brcc mul16_con
+	inc temp7
 	rjmp mul16_con
 	
 
@@ -898,8 +912,8 @@ ADD_16_16_16:
 	add temp2, temp4 
 	adc temp1, temp3  
  
-	add temp2, temp4 
-	adc temp1, temp3
+	add temp2, temp6 
+	adc temp1, temp5
 
 	std Z+0, temp1
 	std Z+1, temp2
@@ -1287,7 +1301,7 @@ wait_end1:
 
 
 SELECT_TIME_MODE: 
-.db "v1.1", 0 
+.db "v1.2", 0 
 TIME_LEFT: 
 .db "Time Left",0 
 TOTAL_TIME: 
