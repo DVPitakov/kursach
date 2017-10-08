@@ -99,22 +99,10 @@ INIT_INTERRUPT:
 	ldi ZH, HIGH(MEM_START) 
 	ldi temp, 0x01 
 	rcall INIT_VARIABLES
-	
-	;**test
-	ldi ZL, LOW(MEM_START)
-	ldi ZH, HIGH(MEM_START)
-	ldi temp, 25
-	std Z+1 + 0 * STRUCT_LEN, temp
-	ldi temp, 50
-	std Z+1 + 1 * STRUCT_LEN, temp
-	ldi temp, 75
-	std Z+1 + 2 * STRUCT_LEN, temp
 
-	ldi temp, 0
-	rcall DRAW_PORTION
-	;**test
-	;ldi temp, 0
-	;rcall DRAW_CURRENT_TIME
+
+	ldi temp, 3
+	rcall DRAW_CURRENT_TIME
 
 	ldi temp0, 0x00 
 	ldi temp2, 0x01
@@ -137,23 +125,26 @@ TIMER_A_INTERRUPT:
 	out TCNT1H, temp 
 	out TCNT1L, temp 
 
+	sbrc temp2, 2
+	rjmp stop_counting_force
+
 	ldi temp, 0x10
 	out OCR1AH, temp 
 	ldi temp, 0x10
 	out OCR1AL, temp
 
+	pop temp2
+	push temp2
 	sbrc temp2, 7
 	ldi temp, 3
 	sbrc temp2, 6
-	ldi temp, 2
+	ldi temp, 0
 	sbrc temp2, 5
 	ldi temp, 1
 	sbrc temp2, 4
-	ldi temp, 0
-	rcall DRAW_CURRENT_TIME
+	ldi temp, 2
 
 ;end
-
 	ldi ZH, HIGH(0 * STRUCT_LEN + MEM_START) 
 	ldi ZL, LOW(0 * STRUCT_LEN + MEM_START) 
 	rcall ADD16
@@ -168,10 +159,35 @@ TIMER_A_INTERRUPT:
 
 	ldi ZH, HIGH(3 * STRUCT_LEN + MEM_START) 
 	ldi ZL, LOW(3 * STRUCT_LEN + MEM_START) 
-	rcall MINUS16 
+	rcall MINUS16
+	breq stop_counting
+	ldi temp5, 0x00
+	rcall DRAW_CURRENT_TIME
 	pop temp2
 	reti 
 
+stop_counting_force:
+	ldi temp, 0x00
+	out TCCR1B, temp
+	rcall CURSOR_BACK 
+	ldi ZL, LOW(FORCE_COUNTING_STOP << 1) 
+	ldi ZH, HIGH(FORCE_COUNTING_STOP <<  1) 
+	ldi temp5, 0x00 
+	rcall DRAW 
+	pop temp2;O_o
+	reti
+
+stop_counting:
+	ldi temp, 0x00
+	out TCCR1B, temp
+	rcall CURSOR_BACK 
+	ldi ZL, LOW(COUNTING_STOP << 1) 
+	ldi ZH, HIGH(COUNTING_STOP <<  1) 
+	ldi temp5, 0x00 
+	rcall DRAW
+	pop temp2;O_o
+	lsl temp2
+	reti
 
 ADD16: 
 	ldd temp1, Z+0 
@@ -335,14 +351,6 @@ INIT_VARIABLES:
 	std Z+14, temp 
 	ret 
 
-SHOW_RESULTS: 
-;Inoaiiaea oaeia?a 
-;lm016l 
-	ldi temp,0x00 
-	out TCCR1A, temp 
-	ret 
-
-
 ;temp - used 
 ;temp1 - used 
 ;temp2 - state 
@@ -418,11 +426,14 @@ on_button4_pressed_set_1hour_interval:
 	ret
 on_button4_out_counting_time:
 	ldi temp, 0x00
+	ldi temp5, 0x00
 	rcall DRAW_CURRENT_TIME
 	andi temp2, 0x0F
 	ori temp2, 0x40
 	ret
 on_button4_out_proportion:
+	ldi temp, 0
+	rcall DRAW_PORTION
 	ret
 
 
@@ -448,12 +459,16 @@ on_button5_pressed_set_1hour_interval:
 	pop temp
 	ret
 on_button5_out_counting_time:
+	ldi temp5, 0x00
 	ldi temp, 0x01
 	rcall DRAW_CURRENT_TIME
 	ldi temp, 0x0F
 	andi temp2, 0x0F
 	ori temp2, 0x20
+	ret
 on_button5_out_proportion:
+	ldi temp, 1
+	rcall DRAW_PORTION
 	ret
 
 
@@ -469,6 +484,7 @@ ON_BUTTON6_PRESSED:
 	pop temp1
 	ret
 on_button6_pressed_set_1hour_interval:
+	ldi temp5, 0x00
 	push temp
 	ldi temp, 1
 	rcall SET_HOURS
@@ -477,11 +493,15 @@ on_button6_pressed_set_1hour_interval:
 	pop temp
 	ret
 on_button6_out_counting_time:
-	ldi temp, 0x01
+	ldi temp5, 0x00
+	ldi temp, 0x02
 	rcall DRAW_CURRENT_TIME
 	andi temp2, 0x0F
 	ori temp2, 0x10
+	ret
 on_button6_out_proportion:
+	ldi temp, 2
+	rcall DRAW_PORTION
 	ret
 
 
@@ -492,16 +512,77 @@ on_button6_out_proportion:
 ;[adder, HL, LH, LL]-oaeia? 3 
 ;[adder, HL, LH, LL]-oaeia? iauee 
 ON_BUTTON7_PRESSED: 
-	push temp1 
-	rcall CURSOR_BACK 
-	ldi ZL, LOW(BUTTON_7_RPRESSED << 1) 
-	ldi ZH, HIGH(BUTTON_7_RPRESSED << 1) 
-	ldi temp5, 0x00 
-	rcall DRAW 
-	ldd temp1, Z+(4 * STRUCT_LEN + 1) 
-	ldd temp2, Z+(4 * STRUCT_LEN + 2)
+	push temp1
+	sbrc temp2, TIME_INTERVAL_STATE
+	rcall on_button7_nop
+	sbrc temp2, OUT_RESULT_STATE
+	rcall on_button7_pressed_get_sum
+	sbrc temp2, TIME_COUNTING_STATE
+	rcall on_button7_pressed_stop_timer
+	pop temp1
+	ret
+
+
+on_button7_pressed_get_sum:
+	ldi ZL, LOW(MEM_START)
+	ldi ZH, HIGH(MEM_START)
+	ldd temp1, Z+(0 * STRUCT_LEN + 1) 
+	ldd temp2, Z+(0 * STRUCT_LEN + 2) 
+	ldd temp3, Z+(1 * STRUCT_LEN + 1) 
+	ldd temp4, Z+(1 * STRUCT_LEN + 2) 
+	ldd temp5, Z+(2 * STRUCT_LEN + 1) 
+	ldd temp6, Z+(2 * STRUCT_LEN + 2)
 	std Z+(5 * STRUCT_LEN + 0), temp1 
 	std Z+(5 * STRUCT_LEN + 1), temp2 
+	std Z+(5 * STRUCT_LEN + 2), temp3 
+	std Z+(5 * STRUCT_LEN + 3), temp4 
+	std Z+(5 * STRUCT_LEN + 4), temp5 
+	std Z+(5 * STRUCT_LEN + 5), temp6
+	ldi ZL, LOW(5 * STRUCT_LEN + 0)
+	ldi ZH, HIGH(5 * STRUCT_LEN + 0)
+	rcall ADD_16_16_16 
+	rcall INT16_TO_TIME_STRING
+	ret
+
+on_button7_pressed_stop_timer:
+	push temp2
+	sbrc temp2, 7
+	rjmp on_button7_stop_counting
+	sbrc temp2, 6
+	ldi temp, 0
+	sbrc temp2, 5
+	ldi temp, 1
+	sbrc temp2, 4
+	ldi temp, 2
+
+	ldi ZL, LOW(MEM_START)
+	ldi ZH, HIGH(MEM_START)
+	push temp1
+	push temp2
+	ldi temp1, HIGH(STRUCT_LEN)
+	ldi temp2, LOW(STRUCT_LEN)
+on_button7_pressed_stop_timer_circl:
+	tst temp
+	breq on_button7_pressed_stop_timer_circl_end
+	dec temp
+	add ZL, temp2
+	adc ZH, temp1
+	rjmp on_button7_pressed_stop_timer_circl
+on_button7_pressed_stop_timer_circl_end:
+	std Z+0, temp
+	pop temp2
+	pop temp1
+	pop temp2
+	ret
+on_button7_nop:
+	nop
+	ret
+on_button7_stop_counting:
+	pop temp2
+	lsl temp2
+	ret
+
+
 case_1: 
 	dec temp 
 	brne case_2 
@@ -1324,6 +1405,8 @@ BUTTON_6_RPRESSED:
 .db "Button 6 pressed", 0 
 BUTTON_7_RPRESSED: 
 .db "Button 7 pressed", 0 
+FORCE_COUNTING_STOP:
+.db "Counting stoped",0
 HOUR_STR: 
 .db "hour", 0 
 HOURS_STR: 
@@ -1338,3 +1421,5 @@ TIME_SET:
 .db "60616263646566676869",0
 NUMBERS:
 .db "0123456789",0
+COUNTING_STOP:
+.db "Ready",0
