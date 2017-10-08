@@ -52,6 +52,20 @@ MY_SLEEP:
 	ret 
 
 TROLLEY_TIMER012:
+	ldi ZH, HIGH(MEM_START) 
+	ldi ZL, LOW(MEM_START) 
+	ldd temp1,Z + 0 * STRUCT_LEN + 1
+	ldd temp2,Z + 0 * STRUCT_LEN + 2
+	ldd temp3,Z + 1 * STRUCT_LEN + 1
+	ldd temp4,Z + 1 * STRUCT_LEN + 2
+	ldd temp5,Z + 2 * STRUCT_LEN + 1
+	ldd temp6,Z + 2 * STRUCT_LEN + 2
+	std Z+(5 * STRUCT_LEN + 0), temp1 
+	std Z+(5 * STRUCT_LEN + 1), temp2 
+	std Z+(5 * STRUCT_LEN + 2), temp3 
+	std Z+(5 * STRUCT_LEN + 3), temp4 
+	std Z+(5 * STRUCT_LEN + 4), temp5 
+	std Z+(5 * STRUCT_LEN + 5), temp6
 	ret
 
 TROLLEY_TIMER0:
@@ -120,7 +134,6 @@ INIT_INTERRUPT:
 	ldi temp0, 0x00 
 	ldi temp2, 0x01
 	ldi temp5, 0x00 
-
 
 	sei 
 
@@ -230,31 +243,8 @@ MINUS16_END:
 
 ;temp from what
 DRAW_PORTION:
-	push ZL
-	push ZH
-	push temp1
 	push temp2
-	push temp3
-	push temp4
-	push temp5
-	push temp6
-	ldi ZH, HIGH(MEM_START) 
-	ldi ZL, LOW(MEM_START) 
-	ldi temp1, HIGH(STRUCT_LEN)
-	ldi temp2, LOW(STRUCT_LEN)
-	ldd temp1,Z + 0 * STRUCT_LEN + 1
-	ldd temp2,Z + 0 * STRUCT_LEN + 2
-	ldd temp3,Z + 1 * STRUCT_LEN + 1
-	ldd temp4,Z + 1 * STRUCT_LEN + 2
-	ldd temp5,Z + 2 * STRUCT_LEN + 1
-	ldd temp6,Z + 2 * STRUCT_LEN + 2
-	std Z+(5 * STRUCT_LEN + 0), temp1 
-	std Z+(5 * STRUCT_LEN + 1), temp2 
-	std Z+(5 * STRUCT_LEN + 2), temp3 
-	std Z+(5 * STRUCT_LEN + 3), temp4 
-	std Z+(5 * STRUCT_LEN + 4), temp5 
-	std Z+(5 * STRUCT_LEN + 5), temp6
-
+	rcall TROLLEY_TIMER012
 	ldi ZH,HIGH(5 * STRUCT_LEN + MEM_START)
 	ldi ZL,LOW(5 * STRUCT_LEN + MEM_START)
 	rcall ADD_16_16_16
@@ -284,14 +274,7 @@ draw_propotion_adding_end:
 	rcall FLOAT_16_TO_STR 
 	ldi temp5, 0x00
 	rcall DRAW2
-	pop temp6
-	pop temp5
-	pop temp4
-	pop temp3
 	pop temp2
-	pop temp1
-	pop ZH
-	pop ZL
 	ret
 ;temp from what
 DRAW_CURRENT_TIME:
@@ -464,24 +447,14 @@ ON_BUTTON7_PRESSED:
 	rcall on_button7_pressed_stop_timer
 	reti
 on_button7_pressed_get_sum:
-	ldi ZL, LOW(MEM_START)
-	ldi ZH, HIGH(MEM_START)
-	ldd temp1, Z+(0 * STRUCT_LEN + 1) 
-	ldd temp2, Z+(0 * STRUCT_LEN + 2) 
-	ldd temp3, Z+(1 * STRUCT_LEN + 1) 
-	ldd temp4, Z+(1 * STRUCT_LEN + 2) 
-	ldd temp5, Z+(2 * STRUCT_LEN + 1) 
-	ldd temp6, Z+(2 * STRUCT_LEN + 2)
-	std Z+(5 * STRUCT_LEN + 0), temp1 
-	std Z+(5 * STRUCT_LEN + 1), temp2 
-	std Z+(5 * STRUCT_LEN + 2), temp3 
-	std Z+(5 * STRUCT_LEN + 3), temp4 
-	std Z+(5 * STRUCT_LEN + 4), temp5 
-	std Z+(5 * STRUCT_LEN + 5), temp6
-	ldi ZL, LOW(5 * STRUCT_LEN + 0)
-	ldi ZH, HIGH(5 * STRUCT_LEN + 0)
+	rcall TROLLEY_TIMER012
+	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START)
+	ldi ZH, HIGH(5 * STRUCT_LEN + MEM_START)
 	rcall ADD_16_16_16 
 	rcall INT16_TO_TIME_STRING
+	ldi temp, 0x05
+	ldi temp5, 0x00
+	rcall DRAW2
 	ret
 
 on_button7_pressed_stop_timer:
@@ -585,19 +558,8 @@ MUL2_16:
 	pop temp2
 	pop temp1
 	ret
-;temp0
-;temp1
-;temp2
-;temp3
-;temp4
-;temp5
-;temp6
-;
-;
-;
 
-;temp1
-;temp2
+
 FLOAT_16_TO_STR:
 	push temp
 	push temp1
@@ -608,7 +570,7 @@ FLOAT_16_TO_STR:
 	push ZL
 
 	ldi temp1, 0x00
-	ldi temp2, 0x0A
+	ldi temp2, 0x14
 	std Z+2, temp1
 	std Z+3, temp2
 	rcall MUL16
@@ -654,8 +616,6 @@ FLOAT_16_TO_STR:
 	std Z+1, temp2
 	ldd temp, Z+4
 	push temp 
-	
-
 	
 	pop temp1
 	pop temp2
@@ -697,6 +657,10 @@ FLOAT_16_TO_STR:
 	std Z+4, temp1
 	ldi temp, '%'
 	std Z+5, temp
+	ldi temp, ' '
+	std Z+6, temp
+	std Z+7, temp
+	std Z+8, temp
 	pop temp4
 	pop temp3
 	pop temp2
@@ -721,16 +685,16 @@ DIVIDE_FLOAT:
 	ldd temp4, Z+3
 	ldi temp5, 0x00
 	ldi temp6, 0x00
-	ldi temp, 16
+	ldi temp, 15
 
 divide_float_circle:
 	lsl temp2
 	rol temp1
 	rcall DIFERENCE16 
 	brcc recov_float
-	inc temp5
+	inc temp6
 divide_float_circle_tail:
-	dec temp 
+	dec temp
 	breq divide_float_circle_end
 	lsl temp6
 	rol temp5
