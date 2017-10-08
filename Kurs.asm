@@ -367,19 +367,21 @@ INIT_VARIABLES:
 ;temp - used 
 ;temp1 - used 
 ;temp2 - state 
-ON_BUTTON_PRESSED_INTERRUPT: 
+ON_BUTTON_PRESSED_INTERRUPT:
+	ldi temp4, 0x03
+	ldi temp5, 0x00
+	ldi temp6, 0x40
 	in temp1, PIND 
 	sbrs temp1, 3 
-	rcall ON_BUTTON3_PRESSED 
+	rjmp ON_BUTTON3_PRESSED 
 	sbrs temp1, 4 
-	rcall ON_BUTTON4_PRESSED 
+	rjmp ON_BUTTON4_PRESSED 
 	sbrs temp1, 5 
-	rcall ON_BUTTON5_PRESSED 
+	rjmp ON_BUTTON5_PRESSED 
 	sbrs temp1, 6 
-	rcall ON_BUTTON6_PRESSED 
+	rjmp ON_BUTTON6_PRESSED 
 	sbrs temp1, 7 
-	rcall ON_BUTTON7_PRESSED 
-	reti 
+	rjmp ON_BUTTON7_PRESSED
 
 
 ;aee??aai oaeia?u 
@@ -390,7 +392,7 @@ ON_BUTTON3_PRESSED:
 	rcall on_button3_nop
 	sbrc temp2, OUT_RESULT_STATE
 	rcall on_button3_nop 
-	ret
+	reti
 on_button3_pressed_start_timing:
 	rcall CURSOR_BACK 
 	ldi ZL, LOW(BUTTON_3_RPRESSED << 1) 
@@ -410,8 +412,18 @@ on_button3_nop:
 	ori temp2, 0x80
 	ret
 
-
-;inoaiiaeou oaeia? 1 
+;temp1
+;4bit - timer0 
+;5bit - timer1 
+;6bit - timer2
+ON_BUTTON6_PRESSED:
+	dec temp4
+	inc temp5
+	lsr temp6
+ON_BUTTON5_PRESSED:
+	dec temp4
+	inc temp5
+	lsr temp6
 ON_BUTTON4_PRESSED: 
 	sbrc temp2, TIME_INTERVAL_STATE
 	rcall on_button4_pressed_set_1hour_interval
@@ -419,85 +431,25 @@ ON_BUTTON4_PRESSED:
 	rcall on_button4_out_counting_time
 	sbrc temp2, OUT_RESULT_STATE
 	rcall on_button4_out_proportion
-	ret
+	reti
 on_button4_pressed_set_1hour_interval:
-	ldi temp, 3
+	mov temp, temp4
 	rcall SET_HOURS
 	ldi temp, 0x03
 	rcall DRAW_CURRENT_TIME
 	ret
 on_button4_out_counting_time:
-	ldi temp, 0x00
+	mov temp, temp5
 	ldi temp5, 0x00
 	rcall DRAW_CURRENT_TIME
 	andi temp2, 0x0F
-	ori temp2, 0x40
+	or temp2, temp6
 	ret
 on_button4_out_proportion:
-	ldi temp, 0
+	mov temp, temp5
 	rcall DRAW_PORTION
 	ret
 
-ON_BUTTON5_PRESSED: 
-	sbrc temp2, TIME_INTERVAL_STATE
-	rcall on_button5_pressed_set_1hour_interval
-	sbrc temp2, TIME_COUNTING_STATE
-	rcall on_button5_out_counting_time
-	sbrc temp2, OUT_RESULT_STATE
-	rcall on_button5_out_proportion
-	ret
-on_button5_pressed_set_1hour_interval:
-	ldi temp, 2
-	rcall SET_HOURS
-	ldi temp, 0x03
-	rcall DRAW_CURRENT_TIME
-	ret
-on_button5_out_counting_time:
-	ldi temp5, 0x00
-	ldi temp, 0x01
-	rcall DRAW_CURRENT_TIME
-	ldi temp, 0x0F
-	andi temp2, 0x0F
-	ori temp2, 0x20
-	ret
-on_button5_out_proportion:
-	ldi temp, 1
-	rcall DRAW_PORTION
-	ret
-
-
-;inoaiiaeou oaeia? 3 
-ON_BUTTON6_PRESSED: 
-	sbrc temp2, TIME_INTERVAL_STATE
-	rcall on_button6_pressed_set_1hour_interval
-	sbrc temp2, TIME_COUNTING_STATE
-	rcall on_button6_out_counting_time
-	sbrc temp2, OUT_RESULT_STATE
-	rcall on_button6_out_proportion
-	ret
-on_button6_pressed_set_1hour_interval:
-	ldi temp5, 0x00
-	push temp
-	ldi temp, 1
-	rcall SET_HOURS
-	ldi temp, 0x03
-	rcall DRAW_CURRENT_TIME
-	pop temp
-	ret
-on_button6_out_counting_time:
-	ldi temp5, 0x00
-	ldi temp, 0x02
-	rcall DRAW_CURRENT_TIME
-	andi temp2, 0x0F
-	ori temp2, 0x10
-	ret
-on_button6_out_proportion:
-	ldi temp, 2
-	rcall DRAW_PORTION
-	ret
-
-
-;auaanoe neaao?uea aaiiua 
 ;ZH:ZL - ia?aei ianneaa aaiiuo 
 ;[adder, HL, LH, LL]-oaeia? 1 
 ;[adder, HL, LH, LL]-oaeia? 2 
@@ -510,9 +462,7 @@ ON_BUTTON7_PRESSED:
 	rcall on_button7_pressed_get_sum
 	sbrc temp2, TIME_COUNTING_STATE
 	rcall on_button7_pressed_stop_timer
-	ret
-
-
+	reti
 on_button7_pressed_get_sum:
 	ldi ZL, LOW(MEM_START)
 	ldi ZH, HIGH(MEM_START)
