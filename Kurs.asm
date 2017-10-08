@@ -4,6 +4,8 @@
 ;ADD_16_16_16
 ;INT16_TO_TIME_STRING
 ;CURSOR_BACK
+;L0 temp2 - хронит состаяние программы
+; 
 ;**********************************************************************************************
 .include "m8515def.inc" ;oaee ii?aaaeaiee ATmega8515 
 
@@ -44,13 +46,24 @@
 	rjmp TIMER_A_INTERRUPT
 
 MY_SLEEP: 
-	;push temp 
-	;ldi temp, (1<< SE) 
-	;out MCUCR, temp 
-	;pop temp 
-	;sleep 
+	ldi temp, (1<< SE) 
+	out MCUCR, temp  
+	sleep 
 	ret 
 
+TROLLEY_TIMER012:
+	ret
+
+TROLLEY_TIMER0:
+	ret
+
+TROLLEY_TIMER1:
+	ret
+
+TROLLEY_TIMER2:
+	ret
+
+TROLLEY_TIMER3:
 INIT_INTERRUPT: 
 	ldi temp7, 0x00 
 	ldi temp8, 0xFF  
@@ -371,18 +384,12 @@ ON_BUTTON_PRESSED_INTERRUPT:
 
 ;aee??aai oaeia?u 
 ON_BUTTON3_PRESSED: 
-	push temp0 
-	push temp1 
-
 	sbrc temp2, TIME_INTERVAL_STATE
 	rcall on_button3_pressed_start_timing
 	sbrc temp2, TIME_COUNTING_STATE
 	rcall on_button3_nop
 	sbrc temp2, OUT_RESULT_STATE
 	rcall on_button3_nop 
-
-	pop temp1
-	pop temp0
 	ret
 on_button3_pressed_start_timing:
 	rcall CURSOR_BACK 
@@ -406,23 +413,18 @@ on_button3_nop:
 
 ;inoaiiaeou oaeia? 1 
 ON_BUTTON4_PRESSED: 
-	push temp1
-	
 	sbrc temp2, TIME_INTERVAL_STATE
 	rcall on_button4_pressed_set_1hour_interval
 	sbrc temp2, TIME_COUNTING_STATE
 	rcall on_button4_out_counting_time
 	sbrc temp2, OUT_RESULT_STATE
 	rcall on_button4_out_proportion
-	pop temp1
 	ret
 on_button4_pressed_set_1hour_interval:
-	push temp
 	ldi temp, 3
 	rcall SET_HOURS
 	ldi temp, 0x03
 	rcall DRAW_CURRENT_TIME
-	pop temp
 	ret
 on_button4_out_counting_time:
 	ldi temp, 0x00
@@ -436,27 +438,19 @@ on_button4_out_proportion:
 	rcall DRAW_PORTION
 	ret
 
-
-
-
-;inoaiiaeou oaeia? 2 
 ON_BUTTON5_PRESSED: 
-	push temp1
 	sbrc temp2, TIME_INTERVAL_STATE
 	rcall on_button5_pressed_set_1hour_interval
 	sbrc temp2, TIME_COUNTING_STATE
 	rcall on_button5_out_counting_time
 	sbrc temp2, OUT_RESULT_STATE
 	rcall on_button5_out_proportion
-	pop temp1
 	ret
 on_button5_pressed_set_1hour_interval:
-	push temp
 	ldi temp, 2
 	rcall SET_HOURS
 	ldi temp, 0x03
 	rcall DRAW_CURRENT_TIME
-	pop temp
 	ret
 on_button5_out_counting_time:
 	ldi temp5, 0x00
@@ -474,14 +468,12 @@ on_button5_out_proportion:
 
 ;inoaiiaeou oaeia? 3 
 ON_BUTTON6_PRESSED: 
-	push temp1
 	sbrc temp2, TIME_INTERVAL_STATE
 	rcall on_button6_pressed_set_1hour_interval
 	sbrc temp2, TIME_COUNTING_STATE
 	rcall on_button6_out_counting_time
 	sbrc temp2, OUT_RESULT_STATE
 	rcall on_button6_out_proportion
-	pop temp1
 	ret
 on_button6_pressed_set_1hour_interval:
 	ldi temp5, 0x00
@@ -511,15 +503,13 @@ on_button6_out_proportion:
 ;[adder, HL, LH, LL]-oaeia? 2 
 ;[adder, HL, LH, LL]-oaeia? 3 
 ;[adder, HL, LH, LL]-oaeia? iauee 
-ON_BUTTON7_PRESSED: 
-	push temp1
+ON_BUTTON7_PRESSED:
 	sbrc temp2, TIME_INTERVAL_STATE
 	rcall on_button7_nop
 	sbrc temp2, OUT_RESULT_STATE
 	rcall on_button7_pressed_get_sum
 	sbrc temp2, TIME_COUNTING_STATE
 	rcall on_button7_pressed_stop_timer
-	pop temp1
 	ret
 
 
@@ -581,67 +571,6 @@ on_button7_stop_counting:
 	pop temp2
 	lsl temp2
 	ret
-
-
-case_1: 
-	dec temp 
-	brne case_2 
-	ldd temp1, Z+(0 * STRUCT_LEN + 1) 
-	ldd temp2, Z+(0 * STRUCT_LEN + 2) 
-	ldd temp3, Z+(1 * STRUCT_LEN + 1) 
-	ldd temp4, Z+(1 * STRUCT_LEN + 2) 
-	ldd temp5, Z+(2 * STRUCT_LEN + 1) 
-	ldd temp6, Z+(2 * STRUCT_LEN + 2)
-	std Z+(5 * STRUCT_LEN + 0), temp1 
-	std Z+(5 * STRUCT_LEN + 1), temp2 
-	std Z+(5 * STRUCT_LEN + 2), temp3 
-	std Z+(5 * STRUCT_LEN + 3), temp4 
-	std Z+(5 * STRUCT_LEN + 4), temp5 
-	std Z+(5 * STRUCT_LEN + 5), temp6
-	ldi ZL, LOW(5 * STRUCT_LEN + 0)
-	ldi ZH, HIGH(5 * STRUCT_LEN + 0)
-	rcall ADD_16_16_16 
-	rcall OUT_ADD_RESULT 
-	rjmp on_button7_pressed_end 
-
-case_2: 
-	dec temp 
-	brne case_3 
-	ldd temp4, Z+(0 * STRUCT_LEN + 1) 
-	ldd temp5, Z+(0 * STRUCT_LEN + 2) 
-	std Z+(5 * STRUCT_LEN + 3), temp4 
-	std Z+(5 * STRUCT_LEN + 4), temp5  
-	rcall DIFERENCE16 
-	rjmp on_button7_pressed_end 
-case_3: 
-	dec temp 
-	brne case_4 
-	ldd temp4, Z+(1 * STRUCT_LEN + 1) 
-	ldd temp5, Z+(1 * STRUCT_LEN + 2) 
-	std Z+(5 * STRUCT_LEN + 3), temp4 
-	std Z+(5 * STRUCT_LEN + 4), temp5 
-	rcall DIFERENCE16 
-	rcall OUT_RESULT 
-	rjmp on_button7_pressed_end 
-case_4: 
-	dec temp 
-	brne case_5 
-	ldd temp4, Z+(2 * STRUCT_LEN + 1) 
-	ldd temp5, Z+(2 * STRUCT_LEN + 2)  
-	std Z+(5 * STRUCT_LEN + 3), temp4 
-	std Z+(5 * STRUCT_LEN + 4), temp5 
-	rcall DIFERENCE16 
-	rcall OUT_RESULT 
-	rjmp on_button7_pressed_end 
-case_5: 
-	dec temp 
-	rcall DIFERENCE16 
-	rcall OUT_RESULT 
-	rjmp on_button7_pressed_end 
-on_button7_pressed_end: 
-	pop temp1 
-	ret 
-
 
 SET_HOURS:
 	push ZL
