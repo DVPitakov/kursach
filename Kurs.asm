@@ -80,7 +80,9 @@ TROLLEY_TIMER2:
 TROLLEY_TIMER3:
 INIT_INTERRUPT: 
 	ldi temp7, 0x00 
-	ldi temp8, 0xFF  
+	ldi temp8, 0xFF
+	mov r14, temp7
+	mov r15, temp8  
 	ldi temp,low(RAMEND) 
 	out SPL,temp 
 	ldi temp,high(RAMEND) 
@@ -220,7 +222,7 @@ ADD16:
 	ldd temp2, Z+1 
 	ldd temp3, Z+2 
 	add temp3, temp1 
-	adc temp2, temp7
+	adc temp2, r14
 
 ADD16_END: 
 	std Z+1, temp2 
@@ -234,7 +236,7 @@ MINUS16:
 	com temp1
 	inc temp1
 	add temp3, temp1 
-	adc temp2, temp8
+	adc temp2, r15
 
 MINUS16_END: 
 	std Z+1, temp2 
@@ -270,7 +272,7 @@ draw_propotion_adding_end:
 	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START) 
 	std Z+0, temp1
 	std Z+1, temp2
-	rcall DIVIDE_FLOAT
+	rcall DIVIDE
 	rcall FLOAT_16_TO_STR 
 	ldi temp5, 0x00
 	rcall DRAW2
@@ -312,32 +314,21 @@ draw_current_time_adding_end:
 ;temp - auai? ?a?eia 1 - 1?an, 1 - 2?ana, 2 - 3?ana 
 INIT_VARIABLES: 
 	push temp 
-	;push temp1
-	;push ZL
-	;push ZH
+	push temp1
+	push ZL
+	push ZH
+	ldi temp1, 3
 init_variables_loop:
 	ldi temp, 1 
-	std Z+0, temp 
+	st Z+, temp 
 	ldi temp, 0 
-	std Z+1, temp 
-	std Z+2, temp
-	;dec temp1
-	ldi temp, 1 
-	std Z+3, temp 
-	ldi temp, 0 
-	std Z+4, temp 
-	std Z+5, temp
-	
-	ldi temp, 1 
-	std Z+6, temp 
-	ldi temp, 0 
-	std Z+7, temp 
-	std Z+8, temp
+	st Z+, temp 
+	st Z+, temp
 	dec temp1
-	;brne init_variables_loop
-	;pop ZH
-	;pop ZL
-	;pop temp1
+	brne init_variables_loop
+	pop ZH
+	pop ZL
+	pop temp1
 
 	pop temp 
 	push temp
@@ -540,8 +531,8 @@ adding_end:
 DIFERENCE16:
 	push temp3
 	push temp4
-	add temp4, temp8 
-	adc temp3, temp8 
+	add temp4, r15 
+	adc temp3, r15 
 	com temp4 
 	com temp3 
 	add temp2, temp4 
@@ -578,6 +569,10 @@ FLOAT_16_TO_STR:
 	push temp4
 	push temp5
 
+	ldd temp7, Z+4
+	ldd temp8, Z+5
+	std Z+0, temp7
+	std Z+1, temp8
 	ldi temp5, 0x04
 float_16_to_str_loop:
 		ldi temp1, 0x00
@@ -593,7 +588,6 @@ float_16_to_str_loop:
 		push temp
 		dec temp5
 	brne float_16_to_str_loop
-
 
 	pop temp1
 	pop temp2
@@ -625,54 +619,6 @@ float_16_to_str_loop:
 	pop temp1
 	pop temp
 	ret
-;return 16bits from
-DIVIDE_FLOAT:
-	push temp 
-	push temp1 
-	push temp2 
-	push temp3 
-	push temp4 
-	push temp5 
-	push temp6 
-	ldd temp1, Z+0
-	ldd temp2, Z+1
-	ldi temp, 0x00
-	std Z+0, temp
-	std Z+1, temp
-	ldd temp3, Z+2
-	ldd temp4, Z+3
-	ldi temp5, 0x00
-	ldi temp6, 0x00
-	ldi temp, 16
-
-divide_float_circle:
-	lsl temp2
-	rol temp1
-	rcall DIFERENCE16 
-	brcc recov_float
-	inc temp6
-divide_float_circle_tail:
-	dec temp
-	breq divide_float_circle_end
-	lsl temp6
-	rol temp5
-	rjmp divide_float_circle
-divide_float_circle_end:
-	std Z+0, temp5
-	std Z+1, temp6
-	pop temp6 
-	pop temp5 
-	pop temp4 
-	pop temp3 
-	pop temp2 
-	pop temp1 
-	pop temp 
-	ret
-recov_float: 
-	rcall SUM16
-	rjmp divide_circle_tail
-
-
 
 DIVIDE: 
 	push temp 
@@ -682,14 +628,15 @@ DIVIDE:
 	push temp4 
 	push temp5 
 	push temp6 
-
-	ldi temp, 16
+	ldi temp, 32
 	ldi temp1, 0x00
 	ldi temp2, 0x00
 	ldd temp3, Z+2
 	ldd temp4, Z+3
 	ldi temp5, 0x00
 	ldi temp6, 0x00
+	ldi temp7, 0x00
+	ldi temp8, 0x00
 
 divide_circle:
 	rcall MUL2_16
@@ -697,17 +644,21 @@ divide_circle:
 	rol temp1
 	rcall DIFERENCE16 
 	brcc recov
-	adc temp6, temp7
-	adc temp5, temp7
+	adc temp8, r14
+	adc temp7, r14
 divide_circle_tail:
 	dec temp 
 	breq divide_circle_end
-	lsl temp6 
-	rol temp5 
+	lsl temp8 
+	rol temp7
+	rol temp6
+	rol temp5
 	rjmp divide_circle
 divide_circle_end:
 	std Z+0, temp5
 	std Z+1, temp6
+	std Z+4, temp7
+	std Z+5, temp8
 	pop temp6 
 	pop temp5 
 	pop temp4 
@@ -832,16 +783,12 @@ INT16_TO_TIME_STRING:
 	push ZL
 	ldd temp1, Z+0
 	ldd temp2, Z+1
-	std Z+0, temp1
-	std Z+1, temp2
-
-
+	
 	ldi temp, HIGH(60 * 60)
 	std Z+2, temp
 	ldi temp, LOW(60 * 60)
 	std Z+3, temp
 	rcall DIVIDE
-	;[div result]:[60 * 60 * 2]
 	ldd temp, Z+0
 	push temp 
 	ldd temp, Z+1
@@ -892,29 +839,30 @@ INT16_TO_TIME_STRING:
 	;[data]:[data_pat]
 	rcall DIFERENCE16
 	;[diferense][data_pat]
-	
+
+
  	pop temp
 	ldi ZH, HIGH(TIME_SET << 1)
 	ldi ZL, LOW(TIME_SET << 1)
 	add ZL, temp
-	adc ZH, temp7
+	adc ZH, r14
 	add ZL, temp
-	adc ZH, temp7
+	adc ZH, r14
 	lpm temp1, Z+0
 	lpm temp2, Z+1
-	 
 	pop temp
+
 	pop temp
 	ldi ZH, HIGH(TIME_SET << 1)
 	ldi ZL, LOW(TIME_SET << 1)
 	add ZL, temp
-	adc ZH, temp7
+	adc ZH, r14
 	add ZL, temp
-	adc ZH, temp7
+	adc ZH, r14
 	lpm temp3, Z+0
 	lpm temp4, Z+1
-
 	pop temp
+
 	pop temp
 	ldi ZH, HIGH(TIME_SET << 1)
 	ldi ZL, LOW(TIME_SET << 1)
@@ -1187,6 +1135,14 @@ wait_end1:
 	pop temp1 
 	ret 
 
+convert_int16_to_str:
+	ldi ZH, HIGH(TIME_SET << 1)
+	ldi ZL, LOW(TIME_SET << 1)
+	add ZL, temp
+	adc ZH, temp7
+	add ZL, temp
+	adc ZH, temp7
+	ret
 
 SELECT_TIME_MODE: 
 .db "v1.2", 0 
