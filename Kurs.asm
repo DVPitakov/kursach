@@ -45,6 +45,37 @@
 .org $010
 	rjmp TIMER_A_INTERRUPT
 
+
+PUSHA:
+	pop XL
+	pop XH
+	push temp
+	push temp1
+	push temp2
+	push temp3
+	push temp4
+	push temp5
+	push temp6
+	push temp7
+	push XH
+	push XL
+	ret
+
+POPA:
+	pop XL
+	pop XH
+	pop temp7
+	pop temp6
+	pop temp5
+	pop temp4
+	pop temp3
+	pop temp2
+	pop temp1
+	pop temp
+	push XH
+	push XL
+	ret
+
 MY_SLEEP: 
 	ldi temp, (1<< SE) 
 	out MCUCR, temp  
@@ -148,7 +179,6 @@ LOOP:
 
 TIMER_A_INTERRUPT:
 	push temp2
-	rcall CURSOR_BACK 
 	ldi temp, 0x00 
 	out TCNT1H, temp 
 	out TCNT1L, temp 
@@ -202,7 +232,6 @@ stop_counting:
 stop_counting_force:
 	ldi temp, 0x00
 	out TCCR1B, temp
-	rcall CURSOR_BACK 
 	ldi ZL, LOW(FORCE_COUNTING_STOP << 1) 
 	ldi ZH, HIGH(FORCE_COUNTING_STOP <<  1) 
 	ldi temp5, 0x00 
@@ -371,7 +400,7 @@ ON_BUTTON3_PRESSED:
 	rcall on_button3_nop 
 	reti
 on_button3_pressed_start_timing:
-	rcall CURSOR_BACK 
+	;rcall CURSOR_BACK 
 	ldi ZL, LOW(BUTTON_3_RPRESSED << 1) 
 	ldi ZH, HIGH(BUTTON_3_RPRESSED <<  1) 
 	ldi temp5, 0x00 
@@ -557,12 +586,7 @@ MUL2_16:
 
 
 FLOAT_16_TO_STR:
-	push temp
-	push temp1
-	push temp2
-	push temp3
-	push temp4
-	push temp5
+	rcall PUSHA
 
 	ldd temp7, Z+4
 	ldd temp8, Z+5
@@ -607,22 +631,13 @@ float_16_to_str_loop:
 	std Z+6, temp
 	std Z+7, temp
 	std Z+8, temp
-	pop temp5
-	pop temp4
-	pop temp3
-	pop temp2
-	pop temp1
-	pop temp
+	ldi temp, 0
+	std Z+9, temp
+	rcall POPA
 	ret
 
 DIVIDE: 
-	push temp 
-	push temp1 
-	push temp2 
-	push temp3 
-	push temp4 
-	push temp5 
-	push temp6 
+	rcall PUSHA
 	ldi temp, 32
 	ldi temp1, 0x00
 	ldi temp2, 0x00
@@ -654,13 +669,7 @@ divide_circle_end:
 	std Z+1, temp6
 	std Z+4, temp7
 	std Z+5, temp8
-	pop temp6 
-	pop temp5 
-	pop temp4 
-	pop temp3 
-	pop temp2 
-	pop temp1 
-	pop temp 
+	rcall POPA 
 
 	ret 
 recov: 
@@ -670,14 +679,7 @@ recov:
 ;!!!сохраняет результаты в Z+2 Z+3 Z+4!!!
 ;!!!Z+4 OVERFLOW
 MUL16:
-	push temp
-	push temp1
-	push temp2
-	push temp3
-	push temp4
-	push temp5
-	push temp6
-	push temp7
+	rcall PUSHA
 
 	ldd temp1, Z+0
 	ldd temp2, Z+1
@@ -705,14 +707,7 @@ mul16_end:
 	std Z+3, temp6
 	std Z+4, temp7
 
-	pop temp7
-	pop temp6
-	pop temp5
-	pop temp4
-	pop temp3
-	pop temp2
-	pop temp1
-	pop temp
+	rcall POPA
 	ret
 mul16_add:
 	add temp6, temp2
@@ -725,12 +720,7 @@ mul16_add:
 ;r1,2,3,4,5,6 - data
 ;r1,2 - sum
 ADD_16_16_16:
-	push temp1
-	push temp2
-	push temp3
-	push temp4
-	push temp5
-	push temp6
+	rcall PUSHA
  
 	ldd temp1, Z+0 
 	ldd temp2, Z+1 
@@ -748,12 +738,7 @@ ADD_16_16_16:
 	std Z+0, temp1
 	std Z+1, temp2
 
-	pop temp6
-	pop temp5
-	pop temp4
-	pop temp3
-	pop temp2
-	pop temp1
+	rcall POPA
 	ret 
 
 OUT_RESULT: 
@@ -767,13 +752,7 @@ ret
 ;...-used 
 ;Z+X-out data str 
 INT16_TO_TIME_STRING:
-	push temp0
-	push temp1
-	push temp2
-	push temp3
-	push temp4
-	push temp5
-	push temp6
+	rcall PUSHA
 	push ZH
 	push ZL
 	ldd temp1, Z+0
@@ -883,13 +862,7 @@ INT16_TO_TIME_STRING:
 	std Z+7, temp2
 	ldi temp, 0x00
 	std Z+8, temp
-	pop temp6
-	pop temp5
-	pop temp4
-	pop temp3
-	pop temp2
-	pop temp1
-	pop temp0
+	rcall POPA
 	ret 
 
 .equ CLEAR_DISPLAY = 0x01 
@@ -921,11 +894,7 @@ INT16_TO_TIME_STRING:
 .equ WRITE_IN_BOTTOM = 0x40
 
 INIT_DISPLAY: 
-	push temp0 
-	push temp1 
-	push temp2 
-	push temp3 
-	push temp4 
+	rcall PUSHA
 	rcall WAIT 
 
 	ldi temp0, 0 
@@ -945,12 +914,7 @@ INIT_DISPLAY:
 	ldi temp4, ACTIVATE_DISPLAY | ACTIVATE_ACTIVATE 
 	rcall SEND_BYTE_COMAND
 
-	pop temp4 
-	pop temp3 
-	pop temp2 
-	pop temp1 
-	pop temp0 
-
+	rcall POPA
 	ret 
 
 SEND_BYTE_COMAND:
@@ -959,6 +923,7 @@ SEND_BYTE_COMAND:
 	out PORTC, temp2 
 	rcall WAIT_SMALL 
 	out PORTB, temp4 
+	out PORTC, temp0
 	ret
 
 FLESH_STR_TO_MEM_STR:
@@ -1089,7 +1054,7 @@ convert_int16_to_str:
 	ret
 
 SELECT_TIME_MODE: 
-.db "v1.2", 0 
+.db "v1.3", 0 
 TIME_LEFT: 
 .db "Time Left",0 
 TOTAL_TIME: 
@@ -1128,26 +1093,3 @@ TIME_SET:
 .db "60616263646566676869"
 COUNTING_STOP:
 .db "Ready",0
-
-;***************************************************************
-;GARBAGE:
-CURSOR_BACK: 
-	push temp0 
-	push temp1 
-	push temp2 
-	push temp3 
-	push temp4 
-
-	out PORTC, temp2 
-	rcall WAIT_SMALL 
-	ldi temp4, CURSOR_TO_DEFAULT_POS 
-	out PORTB, temp4 
-	out PORTC, temp0 
-	rcall WAIT_SMALL 
-
-	pop temp4 
-	pop temp3 
-	pop temp2 
-	pop temp1 
-	pop temp0 
-	ret 
