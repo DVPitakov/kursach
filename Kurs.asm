@@ -139,7 +139,7 @@ INIT_INTERRUPT:
 
 
 LOOP: 
-	;rcall MY_SLEEP 
+	rcall MY_SLEEP 
 	rjmp LOOP 
 	ret 
 
@@ -312,13 +312,16 @@ draw_current_time_adding_end:
 ;temp - auai? ?a?eia 1 - 1?an, 1 - 2?ana, 2 - 3?ana 
 INIT_VARIABLES: 
 	push temp 
-
+	;push temp1
+	;push ZL
+	;push ZH
+init_variables_loop:
 	ldi temp, 1 
 	std Z+0, temp 
 	ldi temp, 0 
 	std Z+1, temp 
 	std Z+2, temp
-
+	;dec temp1
 	ldi temp, 1 
 	std Z+3, temp 
 	ldi temp, 0 
@@ -330,6 +333,11 @@ INIT_VARIABLES:
 	ldi temp, 0 
 	std Z+7, temp 
 	std Z+8, temp
+	dec temp1
+	;brne init_variables_loop
+	;pop ZH
+	;pop ZL
+	;pop temp1
 
 	pop temp 
 	push temp
@@ -447,6 +455,7 @@ ON_BUTTON7_PRESSED:
 	rcall on_button7_pressed_stop_timer
 	reti
 on_button7_pressed_get_sum:
+	push temp2
 	rcall TROLLEY_TIMER012
 	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START)
 	ldi ZH, HIGH(5 * STRUCT_LEN + MEM_START)
@@ -455,6 +464,7 @@ on_button7_pressed_get_sum:
 	ldi temp, 0x05
 	ldi temp5, 0x00
 	rcall DRAW2
+	pop temp2
 	ret
 
 on_button7_pressed_stop_timer:
@@ -566,88 +576,35 @@ FLOAT_16_TO_STR:
 	push temp2
 	push temp3
 	push temp4
-	push ZH
-	push ZL
+	push temp5
 
-	ldi temp1, 0x00
-	ldi temp2, 0x14
-	std Z+2, temp1
-	std Z+3, temp2
-	rcall MUL16
-	ldd temp1, Z+2
-	ldd temp2, Z+3
-	std Z+0, temp1
-	std Z+1, temp2
-	ldd temp, Z+4
-	push temp
+	ldi temp5, 0x04
+float_16_to_str_loop:
+		ldi temp1, 0x00
+		ldi temp2, 0x0A
+		std Z+2, temp1
+		std Z+3, temp2
+		rcall MUL16
+		ldd temp1, Z+2
+		ldd temp2, Z+3
+		std Z+0, temp1
+		std Z+1, temp2
+		ldd temp, Z+4
+		push temp
+		dec temp5
+	brne float_16_to_str_loop
 
-	ldi temp1, 0x00
-	ldi temp2, 0x0A
-	std Z+2, temp1
-	std Z+3, temp2
-	rcall MUL16
-	ldd temp1, Z+2
-	ldd temp2, Z+3
-	std Z+0, temp1
-	std Z+1, temp2
-	ldd temp, Z+4
-	push temp 
 
-	ldi temp1, 0x00
-	ldi temp2, 0x0A
-	std Z+2, temp1
-	std Z+3, temp2
-	rcall MUL16
-	ldd temp1, Z+2
-	ldd temp2, Z+3
-	std Z+0, temp1
-	std Z+1, temp2
-	ldd temp, Z+4
-	push temp 
-
-	ldi temp1, 0x00
-	ldi temp2, 0x0A
-	std Z+2, temp1
-	std Z+3, temp2
-	rcall MUL16
-	ldd temp1, Z+2
-	ldd temp2, Z+3
-	std Z+0, temp1
-	std Z+1, temp2
-	ldd temp, Z+4
-	push temp 
-	
 	pop temp1
 	pop temp2
 	pop temp3
 	pop temp4
 
-	ldi ZL, LOW(NUMBERS << 1)
-	ldi ZH, HIGH(NUMBERS << 1)
-	add ZL, temp1
-	adc ZH, temp7
-	lpm temp1, Z+0
-
-	ldi ZL, LOW(NUMBERS << 1)
-	ldi ZH, HIGH(NUMBERS << 1)
-	add ZL, temp2
-	adc ZH, temp7
-	lpm temp2, Z+0
-
-	ldi ZL, LOW(NUMBERS << 1)
-	ldi ZH, HIGH(NUMBERS << 1)
-	add ZL, temp3
-	adc ZH, temp7
-	lpm temp3, Z+0
-
-	ldi ZL, LOW(NUMBERS << 1)
-	ldi ZH, HIGH(NUMBERS << 1)
-	add ZL, temp4
-	adc ZH, temp7
-	lpm temp4, Z+0
-
-	pop ZL
-	pop ZH
+	ldi temp, '0'
+	add temp1, temp
+	add temp2, temp
+	add temp3, temp
+	add temp4, temp
 
 	std Z+0, temp4
 	std Z+1, temp3
@@ -661,6 +618,7 @@ FLOAT_16_TO_STR:
 	std Z+6, temp
 	std Z+7, temp
 	std Z+8, temp
+	pop temp5
 	pop temp4
 	pop temp3
 	pop temp2
@@ -685,7 +643,7 @@ DIVIDE_FLOAT:
 	ldd temp4, Z+3
 	ldi temp5, 0x00
 	ldi temp6, 0x00
-	ldi temp, 15
+	ldi temp, 16
 
 divide_float_circle:
 	lsl temp2
@@ -817,7 +775,9 @@ mul16_add:
 	inc temp7
 	rjmp mul16_con
 	
-
+;Register call function
+;r1,2,3,4,5,6 - data
+;r1,2 - sum
 ADD_16_16_16:
 	push temp1
 	push temp2
@@ -855,9 +815,9 @@ ret
 
 OUT_ADD_RESULT: 
 ret 
-
-;Z+0-HIGH 
-;Z+1-LOW
+;used registers
+;old;Z+0-HIGH 
+;old;Z+1-LOW
 ;...-used 
 ;Z+X-out data str 
 INT16_TO_TIME_STRING:
@@ -872,6 +832,10 @@ INT16_TO_TIME_STRING:
 	push ZL
 	ldd temp1, Z+0
 	ldd temp2, Z+1
+	std Z+0, temp1
+	std Z+1, temp2
+
+
 	ldi temp, HIGH(60 * 60)
 	std Z+2, temp
 	ldi temp, LOW(60 * 60)
