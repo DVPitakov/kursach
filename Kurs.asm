@@ -194,6 +194,11 @@ TIMER_A_INTERRUPT:
 	pop temp2
 	reti 
 
+
+stop_counting:
+	pop temp2;O_o
+	lsl temp2
+	push temp2
 stop_counting_force:
 	ldi temp, 0x00
 	out TCCR1B, temp
@@ -203,18 +208,6 @@ stop_counting_force:
 	ldi temp5, 0x00 
 	rcall DRAW 
 	pop temp2;O_o
-	reti
-
-stop_counting:
-	ldi temp, 0x00
-	out TCCR1B, temp
-	rcall CURSOR_BACK 
-	ldi ZL, LOW(COUNTING_STOP << 1) 
-	ldi ZH, HIGH(COUNTING_STOP <<  1) 
-	ldi temp5, 0x00 
-	rcall DRAW
-	pop temp2;O_o
-	lsl temp2
 	reti
 
 ADD16: 
@@ -274,11 +267,13 @@ draw_propotion_adding_end:
 	std Z+1, temp2
 	rcall DIVIDE
 	rcall FLOAT_16_TO_STR 
-	ldi temp5, 0x00
+	ldi temp5,  WRITE_IN_BOTTOM
 	rcall DRAW2
 	pop temp2
 	ret
 ;temp from what
+
+
 DRAW_CURRENT_TIME:
 	push ZL
 	push ZH
@@ -303,7 +298,7 @@ draw_current_time_adding_end:
 	std Z+0, temp1
 	std Z+1, temp2
 	rcall INT16_TO_TIME_STRING 
-	ldi temp5, 0x00
+	ldi temp5,  WRITE_IN_BOTTOM
 	rcall DRAW2
 	pop temp2
 	pop temp1
@@ -453,7 +448,7 @@ on_button7_pressed_get_sum:
 	rcall ADD_16_16_16 
 	rcall INT16_TO_TIME_STRING
 	ldi temp, 0x05
-	ldi temp5, 0x00
+	ldi temp5, WRITE_IN_BOTTOM
 	rcall DRAW2
 	pop temp2
 	ret
@@ -938,37 +933,17 @@ INIT_DISPLAY:
 	ldi temp2, 2 
 	ldi temp3, 3 
 
-	out PORTC, temp0 
-	out PORTC, temp2 
-	rcall WAIT_SMALL 
+ 
 	ldi temp4, SET_WIND_PARAMS | SET_8_BIT | SET_2_LINES 
-	out PORTB, temp4 
-	out PORTC, temp0 
-	rcall WAIT_SMALL 
-	out PORTC, temp2 
-	rcall WAIT_SMALL 
+	rcall SEND_BYTE_COMAND
 	ldi temp4,ACTIVATE_DISPLAY 
-	out PORTB, temp4 
-	out PORTC, temp0 
-	rcall WAIT_SMALL 
-	out PORTC, temp2 
-	rcall WAIT_SMALL 
+	rcall SEND_BYTE_COMAND
 	ldi temp4, CLEAR_DISPLAY 
-	out PORTB, temp4 
-	out PORTC, temp0 
-	rcall WAIT_SMALL 
-	out PORTC, temp2 
-	rcall WAIT_SMALL 
+	rcall SEND_BYTE_COMAND
 	ldi temp4, CURSOR_AUTO_MOVE | CURSOR_AUTO_MOVE_RIGHT 
-	out PORTB, temp4 
-	out PORTC, temp0 
-	rcall WAIT_SMALL 
-	out PORTC, temp2 
-	rcall WAIT_SMALL 
+	rcall SEND_BYTE_COMAND
 	ldi temp4, ACTIVATE_DISPLAY | ACTIVATE_ACTIVATE 
-	out PORTB, temp4 
-	out PORTC, temp0 
-	rcall WAIT_SMALL 
+	rcall SEND_BYTE_COMAND
 
 	pop temp4 
 	pop temp3 
@@ -978,65 +953,34 @@ INIT_DISPLAY:
 
 	ret 
 
-CURSOR_BACK: 
-	push temp0 
-	push temp1 
-	push temp2 
-	push temp3 
-	push temp4 
-
+SEND_BYTE_COMAND:
+	out PORTC, temp0 
+	rcall WAIT_SMALL 
 	out PORTC, temp2 
 	rcall WAIT_SMALL 
-	ldi temp4, CURSOR_TO_DEFAULT_POS 
 	out PORTB, temp4 
-	out PORTC, temp0 
-	rcall WAIT_SMALL 
+	ret
 
-	pop temp4 
-	pop temp3 
-	pop temp2 
-	pop temp1 
-	pop temp0 
-	ret 
+FLESH_STR_TO_MEM_STR:
+	push temp4
+	ldi XL, LOW(5 * STRUCT_LEN + MEM_START)
+	ldi XH, HIGH(5 * STRUCT_LEN + MEM_START)
+FLESH_STR_TO_MEM_STR_LOOP:
+	lpm temp4, Z+
+	st X+, temp4 
+	tst temp4
+	brne FLESH_STR_TO_MEM_STR_LOOP
+	pop temp4
+	ret
 
 DRAW: 
-	push temp0 
-	push temp1 
-	push temp2 
-	push temp3 
-	push temp6 
-	
-	ldi temp0, 0 
-	ldi temp1, 1 
-	ldi temp2, 2 
-	ldi temp3, 3 
-
-	out PORTC, temp0 
-	out PORTC, temp2 
-	rcall WAIT_SMALL 
-	ldi temp6, WRITE_IN_DDRAM 
-	add temp5, temp6 
-	out PORTB, temp5 
-	out PORTC, temp0 
-	rcall WAIT_SMALL 
-
-draw_str: 
-	lpm temp4, Z+ 
-	tst temp4 
-	breq draw_end 
-	out PORTC, temp3 
-	rcall WAIT_SMALL 
-	out PORTB, temp4 
-	out PORTC, temp1 
-	rcall WAIT_SMALL 
-	rjmp draw_str 
-
-draw_end: 
-	pop temp6 
-	pop temp3 
-	pop temp2 
-	pop temp1 
-	pop temp0 
+	push temp5
+	ldi temp5, 0x00
+	rcall FLESH_STR_TO_MEM_STR
+	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START)
+	ldi ZH, HIGH(5 * STRUCT_LEN + MEM_START)
+	rcall DRAW2
+	pop temp5
 	ret 
 
 
@@ -1057,7 +1001,7 @@ DRAW2:
 	out PORTC, temp0 
 	out PORTC, temp2 
 	rcall WAIT_SMALL 
-	ldi temp6, WRITE_IN_DDRAM | WRITE_IN_BOTTOM
+	ldi temp6, WRITE_IN_DDRAM
 	add temp5, temp6 
 	out PORTB, temp5 
 	out PORTC, temp0 
@@ -1181,8 +1125,29 @@ TIME_SET:
 .db "30313233343536373839"
 .db "40414243444546474849"
 .db "50515253545556575859"
-.db "60616263646566676869",0
-NUMBERS:
-.db "0123456789",0
+.db "60616263646566676869"
 COUNTING_STOP:
 .db "Ready",0
+
+;***************************************************************
+;GARBAGE:
+CURSOR_BACK: 
+	push temp0 
+	push temp1 
+	push temp2 
+	push temp3 
+	push temp4 
+
+	out PORTC, temp2 
+	rcall WAIT_SMALL 
+	ldi temp4, CURSOR_TO_DEFAULT_POS 
+	out PORTB, temp4 
+	out PORTC, temp0 
+	rcall WAIT_SMALL 
+
+	pop temp4 
+	pop temp3 
+	pop temp2 
+	pop temp1 
+	pop temp0 
+	ret 
