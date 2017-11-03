@@ -14,12 +14,13 @@
 .equ FREQUANCY_DIV = 1024 
 .equ MINUTE = 60 * SECUND 
 .equ HOUR = 60 * MINUTE 
-.equ STRUCT_LEN = 3 
+.equ STRUCT_LEN = 3
 .equ MEM_START = 0x60
 
-.equ TIME_INTERVAL_STATE = 0
-.equ TIME_COUNTING_STATE = 1
-.equ OUT_RESULT_STATE = 2
+.equ TIME_SETUP_STATE = 0
+.equ TIME_INTERVAL_STATE = 1
+.equ TIME_COUNTING_STATE = 2
+.equ OUT_RESULT_STATE = 3
 
 .def temp = r16 
 .def temp0 = r16 
@@ -91,24 +92,14 @@ TROLLEY_TIMER012:
 	ldd temp4,Z + 1 * STRUCT_LEN + 2
 	ldd temp5,Z + 2 * STRUCT_LEN + 1
 	ldd temp6,Z + 2 * STRUCT_LEN + 2
-	std Z+(5 * STRUCT_LEN + 0), temp1 
-	std Z+(5 * STRUCT_LEN + 1), temp2 
-	std Z+(5 * STRUCT_LEN + 2), temp3 
-	std Z+(5 * STRUCT_LEN + 3), temp4 
-	std Z+(5 * STRUCT_LEN + 4), temp5 
-	std Z+(5 * STRUCT_LEN + 5), temp6
+	std Z+(9 * STRUCT_LEN + 0), temp1 
+	std Z+(9 * STRUCT_LEN + 1), temp2 
+	std Z+(9 * STRUCT_LEN + 2), temp3 
+	std Z+(9 * STRUCT_LEN + 3), temp4 
+	std Z+(9 * STRUCT_LEN + 4), temp5 
+	std Z+(9 * STRUCT_LEN + 5), temp6
 	ret
 
-TROLLEY_TIMER0:
-	ret
-
-TROLLEY_TIMER1:
-	ret
-
-TROLLEY_TIMER2:
-	ret
-
-TROLLEY_TIMER3:
 INIT_INTERRUPT: 
 	ldi temp7, 0x00 
 	ldi temp8, 0xFF
@@ -118,10 +109,6 @@ INIT_INTERRUPT:
 	out SPL,temp 
 	ldi temp,high(RAMEND) 
 	out SPH,temp 
- 
-	ldi ZH, 0x00 
-	ldi ZL, 0x00 
-
 	ldi temp, 0x00 
 	out DDRD, temp 
 	ldi temp, 0xFF 
@@ -166,6 +153,7 @@ INIT_INTERRUPT:
 
 	ldi temp0, 0x00 
 	ldi temp2, 0x01
+	ldi temp3, 0x03
 	ldi temp5, 0x00 
 
 	sei 
@@ -183,7 +171,7 @@ TIMER_A_INTERRUPT:
 	out TCNT1H, temp 
 	out TCNT1L, temp 
 
-	sbrc temp2, 2
+	sbrc temp2, 3
 	rjmp stop_counting_force
 
 	ldi temp, 0x10
@@ -269,13 +257,13 @@ MINUS16_END:
 DRAW_PORTION:
 	push temp2
 	rcall TROLLEY_TIMER012
-	ldi ZH,HIGH(5 * STRUCT_LEN + MEM_START)
-	ldi ZL,LOW(5 * STRUCT_LEN + MEM_START)
+	ldi ZH,HIGH(9 * STRUCT_LEN + MEM_START)
+	ldi ZL,LOW(9 * STRUCT_LEN + MEM_START)
 	rcall ADD_16_16_16
 	ldd temp1,Z+0
 	ldd temp2,Z+1
-	std Z+2, temp1
-	std Z+3, temp2
+	std Z+3, temp1
+	std Z+4, temp2
 	ldi ZL, LOW(MEM_START)
 	ldi ZH, HIGH(MEM_START)
 	ldi temp1, HIGH(STRUCT_LEN)
@@ -290,13 +278,21 @@ draw_propotion_adding:
 draw_propotion_adding_end:
 	ldd temp1, Z+1
 	ldd temp2, Z+2
-	ldi ZH, HIGH(5 * STRUCT_LEN + MEM_START) 
-	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START) 
-	std Z+0, temp1
-	std Z+1, temp2
+	ldi ZH, HIGH(9 * STRUCT_LEN + MEM_START) 
+	ldi ZL, LOW(9 * STRUCT_LEN + MEM_START)
+	push temp
+	ldd temp, Z+0
+	std Z+3, temp
+	ldd temp, Z+1
+	std Z+4, temp
+	ldi temp, 0x00
+	std Z+0, temp
+	pop temp 
+	std Z+1, temp1
+	std Z+2, temp2
 	rcall DIVIDE
 	rcall FLOAT_16_TO_STR 
-	ldi temp5,  WRITE_IN_BOTTOM
+	ldi temp5, WRITE_IN_BOTTOM
 	rcall DRAW2
 	pop temp2
 	ret
@@ -322,11 +318,17 @@ draw_current_time_adding:
 draw_current_time_adding_end:
 	ldd temp1, Z+1
 	ldd temp2, Z+2
-	ldi ZH, HIGH(5 * STRUCT_LEN + MEM_START) 
-	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START) 
+	ldi ZH, HIGH(9 * STRUCT_LEN + MEM_START) 
+	ldi ZL, LOW(9 * STRUCT_LEN + MEM_START)
+	
+
+	push temp1
+	ldi temp1, 0x00
 	std Z+0, temp1
-	std Z+1, temp2
-	rcall INT16_TO_TIME_STRING 
+	pop temp1
+	std Z+1, temp1
+	std Z+2, temp2
+	rcall INT24_TO_TIME_STRING 
 	ldi temp5,  WRITE_IN_BOTTOM
 	rcall DRAW2
 	pop temp2
@@ -335,7 +337,7 @@ draw_current_time_adding_end:
 	pop ZL
 	ret
 
-;temp - auai? ?a?eia 1 - 1?an, 1 - 2?ana, 2 - 3?ana 
+ 
 INIT_VARIABLES: 
 	push temp 
 	push temp1
@@ -368,6 +370,24 @@ init_variables_loop:
 	std Z+13, temp 
 	ldi temp, LOW(HOUR * 3) 
 	std Z+14, temp 
+
+	ldi temp, 0 
+
+	std Z+15, temp
+	std Z+16, temp
+	std Z+17, temp
+
+	std Z+18, temp
+	std Z+19, temp
+	std Z+20, temp
+
+	std Z+21, temp
+	std Z+22, temp
+	std Z+23, temp
+
+	std Z+24, temp
+	std Z+25, temp
+	std Z+26, temp
 	ret 
 
 ;temp - used 
@@ -391,16 +411,68 @@ ON_BUTTON_PRESSED_INTERRUPT:
 
 
 ;aee??aai oaeia?u 
-ON_BUTTON3_PRESSED: 
+ON_BUTTON3_PRESSED:
 	sbrc temp2, TIME_INTERVAL_STATE
 	rcall on_button3_pressed_start_timing
 	sbrc temp2, TIME_COUNTING_STATE
 	rcall on_button3_nop
 	sbrc temp2, OUT_RESULT_STATE
 	rcall on_button3_nop 
+	sbrc temp2, TIME_SETUP_STATE
+	rcall on_time_seup_state_start 
 	reti
+
+;TODO
+on_time_seup_state_start:
+	dec temp3
+	brne on_1996
+	ldi temp3, 3
+
+
+;тут происходит нечто
+on_1996:
+	push temp1
+	push temp2
+	push temp3
+
+	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START)
+	ldi ZH, HIGH(5 * STRUCT_LEN + MEM_START)
+	ldi temp1, STRUCT_LEN
+
+on_1997:
+
+	add ZL, temp1
+	ldi temp2, 0x00
+	adc ZH, temp2
+	dec temp3
+	brne on_1997
+
+	ldd temp1, Z+1
+	ldd temp2, Z+2
+
+	ldi ZL, LOW(9 * STRUCT_LEN + MEM_START)
+	ldi ZH, HIGH(9 * STRUCT_LEN + MEM_START)
+
+	push temp
+	ldi temp, 0x00
+	std Z+0, temp
+	pop temp 
+	std Z+1, temp1
+	std Z+2, temp2
+
+	rcall INT24_TO_TIME_STRING 
+	ldi temp5,  WRITE_IN_BOTTOM
+	rcall DRAW2
+
+	pop temp3
+	pop temp2
+	pop temp1
+
+
+	ret
+
+
 on_button3_pressed_start_timing:
-	;rcall CURSOR_BACK 
 	ldi ZL, LOW(BUTTON_3_RPRESSED << 1) 
 	ldi ZH, HIGH(BUTTON_3_RPRESSED <<  1) 
 	ldi temp5, 0x00 
@@ -468,18 +540,36 @@ ON_BUTTON7_PRESSED:
 	rcall on_button7_pressed_get_sum
 	sbrc temp2, TIME_COUNTING_STATE
 	rcall on_button7_pressed_stop_timer
+	sbrc temp2, TIME_SETUP_STATE
+	rcall on_button7_pups
 	reti
 on_button7_pressed_get_sum:
 	push temp2
 	rcall TROLLEY_TIMER012
-	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START)
-	ldi ZH, HIGH(5 * STRUCT_LEN + MEM_START)
-	rcall ADD_16_16_16 
-	rcall INT16_TO_TIME_STRING
+	ldi ZL, LOW(9 * STRUCT_LEN + MEM_START)
+	ldi ZH, HIGH(9 * STRUCT_LEN + MEM_START)
+	rcall ADD_16_16_16
+	push temp0
+	push temp1
+	push temp2
+	ldi temp0, 0x00
+	ldd temp1, Z+0
+	ldd temp2, Z+1
+	std Z+0, temp0
+	std Z+1, temp1
+	std Z+2, temp2
+	pop temp2
+	pop temp1
+	pop temp0 
+	rcall INT24_TO_TIME_STRING
 	ldi temp, 0x05
 	ldi temp5, WRITE_IN_BOTTOM
 	rcall DRAW2
 	pop temp2
+	ret
+
+on_button7_pups:
+	inc temp2
 	ret
 
 on_button7_pressed_stop_timer:
@@ -566,20 +656,94 @@ DIFERENCE16:
 	ret 
 
 
+DIFERENCE24_16:
+	push temp3
+	push temp4
+	push temp8
+
+	ldi temp8, 0x00
+	add temp4, r15 
+	adc temp3, r15
+	adc temp8, r15
+	 
+	com temp4 
+	com temp3 
+	com temp8
+
+	add temp2, temp4 
+	adc temp1, temp3
+	adc temp0, temp8
+
+	pop temp8 
+	pop temp4
+	pop temp3
+	ret 
+
+
+
+DIFERENCE24:
+	push temp3
+	push temp4
+	push temp5
+
+
+	add temp5, r15
+	adc temp4, r15 
+	adc temp3, r15
+	 
+    com temp5
+	com temp4 
+	com temp3 
+
+	add temp2, temp5
+	adc temp1, temp4 
+	adc temp0, temp3
+
+	pop temp5
+	pop temp4
+	pop temp3
+	ret 
+
+
+
+
 SUM16: 
 	add temp2, temp4 
 	adc temp1, temp3 
 	ret 
 
-MUL2_16:
+
+	
+
+SUM24_16: 
+	push temp8
+	ldi temp8, 0x00
+	add temp2, temp4 
+	adc temp1, temp3
+	adc temp0, temp8
+	pop temp8
+	ret 
+
+
+
+MUL2_24:
 	push temp1
 	push temp2
+	push temp3
+
 	ldd temp1, Z+0
 	ldd temp2, Z+1
-	lsl temp2
+	ldd temp3, Z+2
+
+	lsl temp3
+	rol temp2
 	rol temp1
+
 	std Z+0, temp1
 	std Z+1, temp2
+	std Z+2, temp3
+
+	pop temp3
 	pop temp2
 	pop temp1
 	ret
@@ -638,27 +802,36 @@ float_16_to_str_loop:
 
 DIVIDE: 
 	rcall PUSHA
-	ldi temp, 32
+	ldi temp, 40
+	std Z+6, temp
+
+	ldi temp0, 0x00
 	ldi temp1, 0x00
 	ldi temp2, 0x00
-	ldd temp3, Z+2
-	ldd temp4, Z+3
+
+	ldd temp3, Z+3
+	ldd temp4, Z+4
 	ldi temp5, 0x00
 	ldi temp6, 0x00
 	ldi temp7, 0x00
 	ldi temp8, 0x00
 
 divide_circle:
-	rcall MUL2_16
+	rcall MUL2_24
 	rol temp2
 	rol temp1
-	rcall DIFERENCE16 
+	rol temp0
+
+	rcall DIFERENCE24_16 
 	brcc recov
 	adc temp8, r14
-	adc temp7, r14
 divide_circle_tail:
+	std Z+7, temp
+	ldd temp, Z+6
 	dec temp 
 	breq divide_circle_end
+	std Z+6, temp
+	ldd temp, Z+7
 	lsl temp8 
 	rol temp7
 	rol temp6
@@ -673,7 +846,7 @@ divide_circle_end:
 
 	ret 
 recov: 
-	rcall SUM16
+	rcall SUM24_16
 	rjmp divide_circle_tail
 
 ;!!!сохраняет результаты в Z+2 Z+3 Z+4!!!
@@ -751,68 +924,71 @@ ret
 ;old;Z+1-LOW
 ;...-used 
 ;Z+X-out data str 
-INT16_TO_TIME_STRING:
+INT24_TO_TIME_STRING:
 	rcall PUSHA
 	push ZH
 	push ZL
-	ldd temp1, Z+0
-	ldd temp2, Z+1
+	ldd temp0, Z+0
+	ldd temp1, Z+1
+	ldd temp2, Z+2
 	
+	push temp0
 	ldi temp, HIGH(60 * 60)
-	std Z+2, temp
+	std Z+3, temp
 	ldi temp, LOW(60 * 60)
-	std Z+3, temp
+	std Z+4, temp
 	rcall DIVIDE
-	ldd temp, Z+0
-	push temp 
-	ldd temp, Z+1
-	push temp
+	pop temp0
+	ldd temp3, Z+0
+	push temp3 
+	ldd temp3, Z+1
+	push temp3
+	ldi temp3, HIGH(60 * 60)
+	std Z+2, temp3
+	ldi temp3, LOW(60 * 60)
+	std Z+3, temp3
 	rcall MUL16
 	;[div result]:[div result * 60 * 60]
-	ldd temp3, Z+2
-	ldd temp4, Z+3
-	;[data]:[data_pat]
-	rcall DIFERENCE16
+	ldd temp3, Z+4
+	ldd temp4, Z+2
+	push temp5
+	ldd temp5, Z+3
+	rcall DIFERENCE24
+	pop temp5
 
-	;[diferense][data_pat]
-	std Z+0, temp1
-	std Z+1, temp2
+	
+	std Z+0, temp0
+	std Z+1, temp1
+	std Z+2, temp2
+	push temp0
 	ldi temp, HIGH(60)
-	std Z+2, temp
+	std Z+3, temp
 	ldi temp, LOW(60)
-	std Z+3, temp
+	std Z+4, temp
 	rcall DIVIDE
-	;[div result]:[60 * 60]
-	ldd temp, Z+0
-	push temp 
-	ldd temp, Z+1
-	push temp
+	pop temp0
+	ldd temp3, Z+0
+	push temp3 
+	ldd temp3, Z+1
+	push temp3
+	ldi temp3, HIGH(60)
+	std Z+2, temp3
+	ldi temp3, LOW(60)
+	std Z+3, temp3
 	rcall MUL16
-	;[div result]:[div result * 60 * 60]
-	ldd temp3, Z+2
-	ldd temp4, Z+3
-	;[data]:[data_pat]
-	rcall DIFERENCE16
-	;[diferense][data_pat]
-	std Z+0, temp1
-	std Z+1, temp2
-	ldi temp, HIGH(1)
-	std Z+2, temp
-	ldi temp, LOW(1)
-	std Z+3, temp
-	rcall DIVIDE
-	ldd temp, Z+0
-	push temp 
-	ldd temp, Z+1
-	push temp
-	;[div result]:[60 * 60 * 2]
-	rcall MUL16
-	;[div result]:[div result * 60 * 60 *2]
-	ldd temp3, Z+2
-	ldd temp4, Z+3
-	;[data]:[data_pat]
-	rcall DIFERENCE16
-	;[diferense][data_pat]
+	ldd temp3, Z+4
+	ldd temp4, Z+2
+	push temp5
+	ldd temp5, Z+3
+	rcall DIFERENCE24
+	pop temp5
+
+
+	std Z+0, temp0
+	std Z+1, temp1
+	std Z+2, temp2
+	push temp1
+	push temp2
 
 
  	pop temp
@@ -928,8 +1104,8 @@ SEND_BYTE_COMAND:
 
 FLESH_STR_TO_MEM_STR:
 	push temp4
-	ldi XL, LOW(5 * STRUCT_LEN + MEM_START)
-	ldi XH, HIGH(5 * STRUCT_LEN + MEM_START)
+	ldi XL, LOW(9 * STRUCT_LEN + MEM_START)
+	ldi XH, HIGH(9 * STRUCT_LEN + MEM_START)
 FLESH_STR_TO_MEM_STR_LOOP:
 	lpm temp4, Z+
 	st X+, temp4 
@@ -942,8 +1118,8 @@ DRAW:
 	push temp5
 	ldi temp5, 0x00
 	rcall FLESH_STR_TO_MEM_STR
-	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START)
-	ldi ZH, HIGH(5 * STRUCT_LEN + MEM_START)
+	ldi ZL, LOW(9 * STRUCT_LEN + MEM_START)
+	ldi ZH, HIGH(9 * STRUCT_LEN + MEM_START)
 	rcall DRAW2
 	pop temp5
 	ret 
@@ -1043,15 +1219,6 @@ wait_end1:
 	pop temp2 
 	pop temp1 
 	ret 
-
-convert_int16_to_str:
-	ldi ZH, HIGH(TIME_SET << 1)
-	ldi ZL, LOW(TIME_SET << 1)
-	add ZL, temp
-	adc ZH, temp7
-	add ZL, temp
-	adc ZH, temp7
-	ret
 
 SELECT_TIME_MODE: 
 .db "v1.3", 0 
