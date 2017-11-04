@@ -686,6 +686,7 @@ on_button7_pressed_stop_timer_circl:
 	rjmp on_button7_pressed_stop_timer_circl
 on_button7_pressed_stop_timer_circl_end:
 	std Z+0, temp
+	std Z+STRUCT_LEN*5+0, temp
 	pop temp2
 	pop temp1
 	pop temp2
