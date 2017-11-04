@@ -14,7 +14,7 @@
 .equ FREQUANCY_DIV = 1024 
 .equ MINUTE = 60 * SECUND 
 .equ HOUR = 60 * MINUTE 
-.equ STRUCT_LEN = 3
+.equ STRUCT_LEN = 4
 .equ MEM_START = 0x60
 
 .equ TIME_SETUP_STATE = 0
@@ -78,7 +78,7 @@ POPA:
 	ret
 
 MY_SLEEP: 
-	ldi temp, (1<< SE) 
+	ldi temp, (1 << SE) | (2 << ISC00)
 	out MCUCR, temp  
 	sleep 
 	ret 
@@ -86,12 +86,12 @@ MY_SLEEP:
 TROLLEY_TIMER012:
 	ldi ZH, HIGH(MEM_START) 
 	ldi ZL, LOW(MEM_START) 
-	ldd temp1,Z + 0 * STRUCT_LEN + 1
-	ldd temp2,Z + 0 * STRUCT_LEN + 2
-	ldd temp3,Z + 1 * STRUCT_LEN + 1
-	ldd temp4,Z + 1 * STRUCT_LEN + 2
-	ldd temp5,Z + 2 * STRUCT_LEN + 1
-	ldd temp6,Z + 2 * STRUCT_LEN + 2
+	ldd temp1,Z + 0 * STRUCT_LEN + 2
+	ldd temp2,Z + 0 * STRUCT_LEN + 3
+	ldd temp3,Z + 1 * STRUCT_LEN + 2
+	ldd temp4,Z + 1 * STRUCT_LEN + 3
+	ldd temp5,Z + 2 * STRUCT_LEN + 2
+	ldd temp6,Z + 2 * STRUCT_LEN + 3
 	std Z+(9 * STRUCT_LEN + 0), temp1 
 	std Z+(9 * STRUCT_LEN + 1), temp2 
 	std Z+(9 * STRUCT_LEN + 2), temp3 
@@ -101,6 +101,8 @@ TROLLEY_TIMER012:
 	ret
 
 INIT_INTERRUPT: 
+	ldi temp, (1 << SE) | (2 << ISC00)
+	out MCUCR, temp 
 	ldi temp7, 0x00 
 	ldi temp8, 0xFF
 	mov r14, temp7
@@ -154,6 +156,7 @@ INIT_INTERRUPT:
 	ldi temp0, 0x00 
 	ldi temp2, 0x01
 	ldi temp3, 0x03
+	ldi temp4, 0x00
 	ldi temp5, 0x00 
 
 	sei 
@@ -178,6 +181,7 @@ TIMER_A_INTERRUPT:
 	out OCR1AH, temp 
 	ldi temp, 0x10
 	out OCR1AL, temp
+	ldi temp, 0x03
 
 	pop temp2
 	push temp2
@@ -190,7 +194,6 @@ TIMER_A_INTERRUPT:
 	sbrc temp2, 4
 	ldi temp, 2
 
-;end
 	ldi ZH, HIGH(0 * STRUCT_LEN + MEM_START) 
 	ldi ZL, LOW(0 * STRUCT_LEN + MEM_START) 
 	rcall ADD16
@@ -206,6 +209,7 @@ TIMER_A_INTERRUPT:
 	ldi ZH, HIGH(3 * STRUCT_LEN + MEM_START) 
 	ldi ZL, LOW(3 * STRUCT_LEN + MEM_START) 
 	rcall MINUS16
+	
 	breq stop_counting
 	ldi temp5, 0x00
 	rcall DRAW_CURRENT_TIME
@@ -227,35 +231,100 @@ stop_counting_force:
 	pop temp2;O_o
 	reti
 
-ADD16: 
+
+
+;Z012 - первое число и результат
+;Z345 - второе число
+;Zx старше Zx+1
+
+ADD24:
+	rcall PUSHA
 	ldd temp1, Z+0 
 	ldd temp2, Z+1 
 	ldd temp3, Z+2 
-	add temp3, temp1 
+	ldd temp4, Z+3 
+	ldd temp5, Z+4
+	ldd temp6, Z+5
+	add temp3, temp6 
+	adc temp2, temp5
+	adc temp1, temp4
+	std Z+0, temp1 
+	std Z+1, temp2 
+	std Z+2, temp3 
+	rcall POPA
+	ret 
+
+MINUS24:
+	rcall PUSHA
+	ldd temp1, Z+0 
+	ldd temp2, Z+1 
+	ldd temp3, Z+2 
+	ldd temp4, Z+3 
+	ldd temp5, Z+4
+	ldd temp6, Z+5
+
+	com temp4
+	com temp5
+	com temp6
+
+	inc temp6
+	adc temp5, r14
+	adc temp4, r14
+
+
+	add temp3, temp6 
+	adc temp2, temp5
+	adc temp1, temp4
+	std Z+0, temp1 
+	std Z+1, temp2 
+	std Z+2, temp3 
+	rcall POPA
+	ret 
+
+
+
+
+ADD16: 
+	ldd temp1, Z+0 
+	ldd temp2, Z+1 
+	ldd temp3, Z+2
+	ldd temp4, Z+3
+	add temp4, temp1 
+	adc temp3, r14
 	adc temp2, r14
 
 ADD16_END: 
-	std Z+1, temp2 
+	std Z+1, temp2
 	std Z+2, temp3 
+	std Z+3, temp4 
 	ret 
 
 MINUS16: 
 	ldd temp1, Z+0 
 	ldd temp2, Z+1 
 	ldd temp3, Z+2
+	ldd temp4, Z+3
 	com temp1
 	inc temp1
-	add temp3, temp1 
+	add temp4, temp1 
+	adc temp3, r15
 	adc temp2, r15
-
-MINUS16_END: 
 	std Z+1, temp2 
 	std Z+2, temp3 
+	std Z+3, temp4
+
+
+	tst temp2
+	brne r2253
+	tst temp3
+	brne r2253
+	tst temp4
+r2253:
 	ret 
 
 ;temp from what
 DRAW_PORTION:
-	push temp2
+	rcall PUSHA
 	rcall TROLLEY_TIMER012
 	ldi ZH,HIGH(9 * STRUCT_LEN + MEM_START)
 	ldi ZL,LOW(9 * STRUCT_LEN + MEM_START)
@@ -276,8 +345,8 @@ draw_propotion_adding:
 	adc ZH, temp1
 	rjmp draw_propotion_adding
 draw_propotion_adding_end:
-	ldd temp1, Z+1
-	ldd temp2, Z+2
+	ldd temp1, Z+2
+	ldd temp2, Z+3
 	ldi ZH, HIGH(9 * STRUCT_LEN + MEM_START) 
 	ldi ZL, LOW(9 * STRUCT_LEN + MEM_START)
 	push temp
@@ -294,16 +363,13 @@ draw_propotion_adding_end:
 	rcall FLOAT_16_TO_STR 
 	ldi temp5, WRITE_IN_BOTTOM
 	rcall DRAW2
-	pop temp2
+	rcall POPA
 	ret
 ;temp from what
 
 
 DRAW_CURRENT_TIME:
-	push ZL
-	push ZH
-	push temp1
-	push temp2
+	rcall PUSHA
 	ldi ZH, HIGH(MEM_START) 
 	ldi ZL, LOW(MEM_START) 
 	ldi temp1, HIGH(STRUCT_LEN)
@@ -316,29 +382,24 @@ draw_current_time_adding:
 	adc ZH, temp1
 	rjmp draw_current_time_adding
 draw_current_time_adding_end:
-	ldd temp1, Z+1
-	ldd temp2, Z+2
+	ldd temp, Z+1
+	ldd temp1, Z+2
+	ldd temp2, Z+3
 	ldi ZH, HIGH(9 * STRUCT_LEN + MEM_START) 
 	ldi ZL, LOW(9 * STRUCT_LEN + MEM_START)
 	
-
-	push temp1
-	ldi temp1, 0x00
-	std Z+0, temp1
-	pop temp1
+	std Z+0, temp
 	std Z+1, temp1
 	std Z+2, temp2
 	rcall INT24_TO_TIME_STRING 
 	ldi temp5,  WRITE_IN_BOTTOM
 	rcall DRAW2
-	pop temp2
-	pop temp1
-	pop ZH
-	pop ZL
+	rcall POPA
 	ret
 
  
 INIT_VARIABLES: 
+	push temp4
 	push temp 
 	push temp1
 	push ZL
@@ -350,53 +411,44 @@ init_variables_loop:
 	ldi temp, 0 
 	st Z+, temp 
 	st Z+, temp
+	st Z+, temp
 	dec temp1
 	brne init_variables_loop
+
+	ldi temp, 1
+	st Z+, temp 
+	ldi temp, 0
+	st Z+, temp 
+	ldi temp, HIGH(HOUR * 3) 
+	st Z+, temp 
+	ldi temp, LOW(HOUR * 3) 
+	st Z+, temp 
+
+	ldi temp1,6
+init_variables_loop2:
+	ldi temp, 0
+	st Z+, temp
+	st Z+, temp 
+	st Z+, temp
+	st Z+, temp
+	dec temp1
+	brne init_variables_loop2
+
 	pop ZH
 	pop ZL
 	pop temp1
-
-	pop temp 
-	push temp
-	std Z+9, temp 
-	ldi temp, HIGH(HOUR * 3) 
-	std Z+10, temp 
-	ldi temp, LOW(HOUR * 3) 
-	std Z+11, temp 
-
 	pop temp
-	std Z+12, temp 
-	ldi temp, HIGH(HOUR * 3) 
-	std Z+13, temp 
-	ldi temp, LOW(HOUR * 3) 
-	std Z+14, temp 
-
-	ldi temp, 0 
-
-	std Z+15, temp
-	std Z+16, temp
-	std Z+17, temp
-
-	std Z+18, temp
-	std Z+19, temp
-	std Z+20, temp
-
-	std Z+21, temp
-	std Z+22, temp
-	std Z+23, temp
-
-	std Z+24, temp
-	std Z+25, temp
-	std Z+26, temp
+	pop temp4
 	ret 
 
 ;temp - used 
-;temp1 - used 
+;temp1 - used - нажаиая кнопка
 ;temp2 - state 
+;temp1?
 ON_BUTTON_PRESSED_INTERRUPT:
-	ldi temp4, 0x03
-	ldi temp5, 0x00
-	ldi temp6, 0x40
+	ldi temp5, 0x03
+	ldi temp6, 0x00
+	ldi temp7, 0x40
 	in temp1, PIND 
 	sbrs temp1, 3 
 	rjmp ON_BUTTON3_PRESSED 
@@ -424,51 +476,7 @@ ON_BUTTON3_PRESSED:
 
 ;TODO
 on_time_seup_state_start:
-	dec temp3
-	brne on_1996
-	ldi temp3, 3
-
-
-;тут происходит нечто
-on_1996:
-	push temp1
-	push temp2
-	push temp3
-
-	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START)
-	ldi ZH, HIGH(5 * STRUCT_LEN + MEM_START)
-	ldi temp1, STRUCT_LEN
-
-on_1997:
-
-	add ZL, temp1
-	ldi temp2, 0x00
-	adc ZH, temp2
-	dec temp3
-	brne on_1997
-
-	ldd temp1, Z+1
-	ldd temp2, Z+2
-
-	ldi ZL, LOW(9 * STRUCT_LEN + MEM_START)
-	ldi ZH, HIGH(9 * STRUCT_LEN + MEM_START)
-
-	push temp
-	ldi temp, 0x00
-	std Z+0, temp
-	pop temp 
-	std Z+1, temp1
-	std Z+2, temp2
-
-	rcall INT24_TO_TIME_STRING 
-	ldi temp5,  WRITE_IN_BOTTOM
-	rcall DRAW2
-
-	pop temp3
-	pop temp2
-	pop temp1
-
-
+	inc temp4
 	ret
 
 
@@ -481,7 +489,7 @@ on_button3_pressed_start_timing:
 	out TCCR1A, temp 
 	ldi temp, 0x05 
 	out TCCR1B, temp
-	lsl temp2
+	ldi temp2, 1 << TIME_COUNTING_STATE 
 	ret
 on_button3_nop:
 	ldi temp, 0x03
@@ -490,18 +498,14 @@ on_button3_nop:
 	ori temp2, 0x80
 	ret
 
-;temp1
-;4bit - timer0 
-;5bit - timer1 
-;6bit - timer2
 ON_BUTTON6_PRESSED:
-	dec temp4
-	inc temp5
-	lsr temp6
+	dec temp5
+	inc temp6
+	lsr temp7
 ON_BUTTON5_PRESSED:
-	dec temp4
-	inc temp5
-	lsr temp6
+	dec temp5
+	inc temp6
+	lsr temp7
 ON_BUTTON4_PRESSED: 
 	sbrc temp2, TIME_INTERVAL_STATE
 	rcall on_button4_pressed_set_1hour_interval
@@ -509,37 +513,108 @@ ON_BUTTON4_PRESSED:
 	rcall on_button4_out_counting_time
 	sbrc temp2, OUT_RESULT_STATE
 	rcall on_button4_out_proportion
+	sbrc temp2, TIME_SETUP_STATE
+	rcall on_button4_seup_state_start 
 	reti
+
+on_button4_seup_state_start:
+	rcall PUSHA
+	push temp4
+	ldi ZH, HIGH(5 * STRUCT_LEN + MEM_START)
+	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START)
+	tst temp4
+	breq rr_t3
+rr_t1:
+	push temp1
+	ldi temp1, STRUCT_LEN
+	add ZL, temp1
+	adc ZH, r14
+	pop temp1
+	dec temp4
+	brne rr_t1
+
+rr_t3:
+	push ZH
+	push ZL
+
+	tst temp6
+	brne tg1
+	ldi temp1, HIGH(HOUR)
+	ldi temp2, LOW(HOUR)
+	rjmp tg3
+tg1:
+	dec temp6
+	brne tg2
+	ldi temp1, HIGH(MINUTE)
+	ldi temp2, LOW(MINUTE)
+	rjmp tg3
+tg2:
+	dec temp6
+	ldi temp1, HIGH(SECUND)
+	ldi temp2, LOW(SECUND)
+tg3:
+	ldd temp3, Z+1
+	ldd temp4, Z+2
+	ldd temp5, Z+3
+	ldi ZH, HIGH(8 * STRUCT_LEN + MEM_START)
+	ldi ZL, LOW(8 * STRUCT_LEN + MEM_START)
+
+	std Z+0, temp3
+	std Z+1, temp4
+	std Z+2, temp5
+
+	push temp0
+	ldi temp, 0x00
+	std Z+3, temp0
+	pop temp0
+	std Z+4, temp1
+	std Z+5, temp2
+	rcall ADD24
+	ldd temp1, Z+0
+	ldd temp2, Z+1
+	ldd temp3, Z+2
+	pop ZL
+	pop ZH
+	std Z+1, temp1
+	std Z+2, temp2
+	std Z+3, temp3
+	pop temp5
+	ldi temp, 0x05
+	add temp, temp5
+	rcall DRAW_CURRENT_TIME
+	rcall POPA
+	ret
+
+
+
+
 on_button4_pressed_set_1hour_interval:
-	mov temp, temp4
+	mov temp, temp5
 	rcall SET_HOURS
 	ldi temp, 0x03
 	rcall DRAW_CURRENT_TIME
 	ret
 on_button4_out_counting_time:
-	mov temp, temp5
-	ldi temp5, 0x00
+	mov temp, temp6
+	ldi temp6, 0x00
 	rcall DRAW_CURRENT_TIME
 	andi temp2, 0x0F
-	or temp2, temp6
+	or temp2, temp7
 	ret
 on_button4_out_proportion:
-	mov temp, temp5
+	mov temp, temp6
 	rcall DRAW_PORTION
 	ret
 
-;ZH:ZL - ia?aei ianneaa aaiiuo 
-;[adder, HL, LH, LL]-oaeia? 1 
-;[adder, HL, LH, LL]-oaeia? 2 
-;[adder, HL, LH, LL]-oaeia? 3 
-;[adder, HL, LH, LL]-oaeia? iauee 
+
+
 ON_BUTTON7_PRESSED:
-	sbrc temp2, TIME_INTERVAL_STATE
-	rcall on_button7_nop
 	sbrc temp2, OUT_RESULT_STATE
 	rcall on_button7_pressed_get_sum
 	sbrc temp2, TIME_COUNTING_STATE
 	rcall on_button7_pressed_stop_timer
+	sbrc temp2, TIME_INTERVAL_STATE
+	rcall on_button7_nop
 	sbrc temp2, TIME_SETUP_STATE
 	rcall on_button7_pups
 	reti
@@ -569,7 +644,7 @@ on_button7_pressed_get_sum:
 	ret
 
 on_button7_pups:
-	inc temp2
+	ldi temp2,1 << TIME_INTERVAL_STATE
 	ret
 
 on_button7_pressed_stop_timer:
@@ -613,6 +688,7 @@ on_button7_stop_counting:
 SET_HOURS:
 	push ZL
 	push ZH
+	push temp2
 	push temp3
 	push temp4
 	ldi ZL, LOW(3 * STRUCT_LEN + MEM_START)
@@ -629,10 +705,13 @@ adding:
 	adc temp4, temp6
 	rjmp adding
 adding_end:
-	std Z+1, temp3
-	std Z+2, temp4
+	ldi temp2, 0x00
+	std Z+1, temp2
+	std Z+2, temp3
+	std Z+3, temp4
 	pop temp4
 	pop temp3
+	pop temp2
 	pop ZH
 	pop ZL
 	ret
@@ -1017,9 +1096,9 @@ INT24_TO_TIME_STRING:
 	ldi ZH, HIGH(TIME_SET << 1)
 	ldi ZL, LOW(TIME_SET << 1)
 	add ZL, temp
-	adc ZH, temp7
+	adc ZH, r14
 	add ZL, temp
-	adc ZH, temp7
+	adc ZH, r14
 	lpm temp5, Z+0
 	lpm temp6, Z+1
 	pop temp
@@ -1219,7 +1298,14 @@ wait_end1:
 	pop temp2 
 	pop temp1 
 	ret 
-
+TIME_SET:
+.db "00010203040506070809"
+.db "10111213141516171819"
+.db "20212223242526272829"
+.db "30313233343536373839"
+.db "40414243444546474849"
+.db "50515253545556575859"
+.db "60616263646566676869"
 SELECT_TIME_MODE: 
 .db "v1.3", 0 
 TIME_LEFT: 
@@ -1250,13 +1336,5 @@ HOUR_STR:
 .db "hour", 0 
 HOURS_STR: 
 .db "hours", 0
-TIME_SET:
-.db "00010203040506070809"
-.db "10111213141516171819"
-.db "20212223242526272829"
-.db "30313233343536373839"
-.db "40414243444546474849"
-.db "50515253545556575859"
-.db "60616263646566676869"
 COUNTING_STOP:
 .db "Ready",0
