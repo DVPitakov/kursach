@@ -188,11 +188,11 @@ TIMER_A_INTERRUPT:
 	sbrc temp2, 7
 	ldi temp, 3
 	sbrc temp2, 6
-	ldi temp, 0
+	ldi temp, 5
 	sbrc temp2, 5
-	ldi temp, 1
+	ldi temp, 6
 	sbrc temp2, 4
-	ldi temp, 2
+	ldi temp, 7
 
 	ldi ZH, HIGH(0 * STRUCT_LEN + MEM_START) 
 	ldi ZL, LOW(0 * STRUCT_LEN + MEM_START) 
@@ -206,12 +206,23 @@ TIMER_A_INTERRUPT:
 	ldi ZL, LOW(2 * STRUCT_LEN + MEM_START) 
 	rcall ADD16 
 
+	ldi ZH, HIGH(5 * STRUCT_LEN + MEM_START) 
+	ldi ZL, LOW(5 * STRUCT_LEN + MEM_START) 
+	rcall ADD16
+
+	ldi ZH, HIGH(6 * STRUCT_LEN + MEM_START) 
+	ldi ZL, LOW(6 * STRUCT_LEN + MEM_START) 
+	rcall ADD16 
+
+	ldi ZH, HIGH(7 * STRUCT_LEN + MEM_START) 
+	ldi ZL, LOW(7 * STRUCT_LEN + MEM_START) 
+	rcall ADD16 
+
 	ldi ZH, HIGH(3 * STRUCT_LEN + MEM_START) 
 	ldi ZL, LOW(3 * STRUCT_LEN + MEM_START) 
 	rcall MINUS16
-	
 	breq stop_counting
-	ldi temp5, 0x00
+
 	rcall DRAW_CURRENT_TIME
 	pop temp2
 	reti 
@@ -426,8 +437,9 @@ init_variables_loop:
 
 	ldi temp1,6
 init_variables_loop2:
-	ldi temp, 0
+	ldi temp, 1
 	st Z+, temp
+	ldi temp, 0
 	st Z+, temp 
 	st Z+, temp
 	st Z+, temp
@@ -595,7 +607,8 @@ on_button4_pressed_set_1hour_interval:
 	rcall DRAW_CURRENT_TIME
 	ret
 on_button4_out_counting_time:
-	mov temp, temp6
+	ldi temp, 0x05
+	add temp, temp6
 	ldi temp6, 0x00
 	rcall DRAW_CURRENT_TIME
 	andi temp2, 0x0F
