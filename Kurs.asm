@@ -730,31 +730,6 @@ adding_end:
 ;temp2-OutLByte
 
 
-DIFERENCE24_16:
-	push temp3
-	push temp4
-	push temp8
-
-	ldi temp8, 0x00
-	add temp4, r15 
-	adc temp3, r15
-	adc temp8, r15
-	 
-	com temp4 
-	com temp3 
-	com temp8
-
-	add temp2, temp4 
-	adc temp1, temp3
-	adc temp0, temp8
-
-	pop temp8 
-	pop temp4
-	pop temp3
-	ret 
-
-
-
 DIFERENCE24:
 	push temp3
 	push temp4
@@ -777,18 +752,7 @@ DIFERENCE24:
 	pop temp4
 	pop temp3
 	ret 
-
-
-
-
-SUM16: 
-	add temp2, temp4 
-	adc temp1, temp3 
-	ret 
-
-
 	
-
 SUM24_16: 
 	push temp8
 	ldi temp8, 0x00
@@ -896,7 +860,16 @@ divide_circle:
 	rol temp1
 	rol temp0
 
-	rcall DIFERENCE24_16 
+	push temp5
+	push temp4
+	push temp3
+	mov temp5, temp4
+	mov temp4, temp3
+	ldi temp3, 0x00
+	rcall DIFERENCE24
+	pop temp3
+	pop temp4
+	pop temp5 
 	brcc recov
 	adc temp8, r14
 divide_circle_tail:
@@ -1006,114 +979,91 @@ INT24_TO_TIME_STRING:
 	ldd temp0, Z+0
 	ldd temp1, Z+1
 	ldd temp2, Z+2
-	
-	push temp0
-	ldi temp, HIGH(60 * 60)
-	std Z+3, temp
-	ldi temp, LOW(60 * 60)
-	std Z+4, temp
-	rcall DIVIDE
-	pop temp0
-	ldd temp3, Z+0
-	push temp3 
-	ldd temp3, Z+1
-	push temp3
-	ldi temp3, HIGH(60 * 60)
-	std Z+2, temp3
-	ldi temp3, LOW(60 * 60)
-	std Z+3, temp3
-	rcall MUL16
-	ldd temp3, Z+4
-	ldd temp4, Z+2
-	push temp5
-	ldd temp5, Z+3
-	rcall DIFERENCE24
-	pop temp5
 
+	ldi temp3, 0x00
+	ldi temp4, 0x08
+	mov r3, temp3
+	mov r4, temp4
+	mov r6, ZL
+	mov r5, ZH
+	add r4, ZL
+	adc r3, ZH
 
-	std Z+0, temp0
-	std Z+1, temp1
-	std Z+2, temp2
-	push temp0
-	ldi temp, HIGH(60)
-	std Z+3, temp
-	ldi temp, LOW(60)
-	std Z+4, temp
-	rcall DIVIDE
-	pop temp0
-	ldd temp3, Z+0
-	push temp3 
-	ldd temp3, Z+1
-	push temp3
-	ldi temp3, HIGH(60)
-	std Z+2, temp3
-	ldi temp3, LOW(60)
-	std Z+3, temp3
-	rcall MUL16
-	ldd temp3, Z+4
-	ldd temp4, Z+2
-	push temp5
-	ldd temp5, Z+3
-	rcall DIFERENCE24
-	pop temp5
-
-
-	std Z+0, temp0
-	std Z+1, temp1
-	std Z+2, temp2
-	push temp1
-	push temp2
-
-
- 	pop temp
-	ldi ZH, HIGH(TIME_SET << 1)
-	ldi ZL, LOW(TIME_SET << 1)
-	add ZL, temp
-	adc ZH, r14
-	add ZL, temp
-	adc ZH, r14
-	lpm temp1, Z+0
-	lpm temp2, Z+1
-	pop temp
-
-	pop temp
-	ldi ZH, HIGH(TIME_SET << 1)
-	ldi ZL, LOW(TIME_SET << 1)
-	add ZL, temp
-	adc ZH, r14
-	add ZL, temp
-	adc ZH, r14
-	lpm temp3, Z+0
-	lpm temp4, Z+1
-	pop temp
-
-	pop temp
-	ldi ZH, HIGH(TIME_SET << 1)
-	ldi ZL, LOW(TIME_SET << 1)
-	add ZL, temp
-	adc ZH, r14
-	add ZL, temp
-	adc ZH, r14
-	lpm temp5, Z+0
-	lpm temp6, Z+1
-	pop temp
+	ldi temp4, HIGH(60 * 60)
+	ldi temp5, LOW(60 * 60)
+	rcall INT_24_TO_STRING_CORE
+	ldi temp4, HIGH(60)
+	ldi temp5, LOW(60)
+	rcall INT_24_TO_STRING_CORE
+	ldi temp4, HIGH(1)
+	ldi temp5, LOW(1)
+	rcall INT_24_TO_STRING_CORE
 
 	pop ZL
 	pop ZH
-
-	ldi temp, ':'
-	std Z+0, temp5
-	std Z+1, temp6
-	std Z+2, temp
-	std Z+3, temp3
-	std Z+4, temp4
-	std Z+5, temp
-	std Z+6, temp1
-	std Z+7, temp2
 	ldi temp, 0x00
 	std Z+8, temp
+
 	rcall POPA
 	ret 
+
+INT_24_TO_STRING_CORE:
+	mov ZL, r4
+	mov ZH, r3
+	std Z+0, temp0
+	std Z+1, temp1
+	std Z+2, temp2
+	push temp0
+	std Z+3, temp4
+	std Z+4, temp5
+	rcall DIVIDE
+	pop temp0
+	ldd temp3, Z+1
+	ldi ZH, HIGH(TIME_SET << 1)
+	ldi ZL, LOW(TIME_SET << 1)
+	add ZL, temp3
+	adc ZH, r14
+	add ZL, temp3
+	adc ZH, r14
+
+
+	push temp1
+	push temp2
+	push temp
+	push ZH
+	push ZL
+
+	lpm temp1, Z+0
+	lpm temp2, Z+1
+	ldi temp, ':'
+	mov ZL, r6
+	mov ZH, r5
+	st Z+, temp1
+	st Z+, temp2
+	st Z+, temp
+	mov r5, ZH
+	mov r6, ZL
+
+	pop ZL
+	pop ZH
+	pop temp
+	pop temp2
+	pop temp1
+
+
+	mov ZL, r4
+	mov ZH, r3
+	std Z+2, temp4
+	std Z+3, temp5
+	rcall MUL16
+	ldd temp3, Z+4
+	ldd temp4, Z+2
+	push temp5
+	ldd temp5, Z+3
+	rcall DIFERENCE24
+	pop temp5
+	ret
+
 
 .equ CLEAR_DISPLAY = 0x01 
 .equ CURSOR_TO_DEFAULT_POS = 0x02 

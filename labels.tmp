@@ -26,9 +26,9 @@
   <POPA><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>67</LINE></POPA>
   <MY_SLEEP><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>82</LINE></MY_SLEEP>
   <TROLLEY_TIMER012><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>88</LINE></TROLLEY_TIMER012>
-  <INIT_DISPLAY><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1146</LINE></INIT_DISPLAY>
-  <SELECT_TIME_MODE><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1304</LINE></SELECT_TIME_MODE>
-  <DRAW><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1191</LINE></DRAW>
+  <INIT_DISPLAY><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1096</LINE></INIT_DISPLAY>
+  <SELECT_TIME_MODE><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1254</LINE></SELECT_TIME_MODE>
+  <DRAW><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1141</LINE></DRAW>
   <INIT_VARIABLES><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>408</LINE></INIT_VARIABLES>
   <DRAW_CURRENT_TIME><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>378</LINE></DRAW_CURRENT_TIME>
   <LOOP><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>167</LINE></LOOP>
@@ -36,21 +36,21 @@
   <ADD16><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>294</LINE></ADD16>
   <MINUS16><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>309</LINE></MINUS16>
   <stop_counting><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>228</LINE></stop_counting>
-  <FORCE_COUNTING_STOP><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1328</LINE></FORCE_COUNTING_STOP>
+  <FORCE_COUNTING_STOP><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1278</LINE></FORCE_COUNTING_STOP>
   <ADD24><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>248</LINE></ADD24>
   <MINUS24><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>265</LINE></MINUS24>
   <ADD16_END><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>303</LINE></ADD16_END>
   <r2253><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>329</LINE></r2253>
   <DRAW_PORTION><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>333</LINE></DRAW_PORTION>
-  <ADD_16_16_16><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>969</LINE></ADD_16_16_16>
+  <ADD_16_16_16><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>942</LINE></ADD_16_16_16>
   <draw_propotion_adding><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>347</LINE></draw_propotion_adding>
   <draw_propotion_adding_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>354</LINE></draw_propotion_adding_end>
-  <DIVIDE><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>877</LINE></DIVIDE>
-  <FLOAT_16_TO_STR><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>826</LINE></FLOAT_16_TO_STR>
-  <DRAW2><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1202</LINE></DRAW2>
+  <DIVIDE><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>841</LINE></DIVIDE>
+  <FLOAT_16_TO_STR><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>790</LINE></FLOAT_16_TO_STR>
+  <DRAW2><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1152</LINE></DRAW2>
   <draw_current_time_adding><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>384</LINE></draw_current_time_adding>
   <draw_current_time_adding_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>391</LINE></draw_current_time_adding_end>
-  <INT24_TO_TIME_STRING><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1002</LINE></INT24_TO_TIME_STRING>
+  <INT24_TO_TIME_STRING><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>975</LINE></INT24_TO_TIME_STRING>
   <init_variables_loop><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>415</LINE></init_variables_loop>
   <init_variables_loop2><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>435</LINE></init_variables_loop2>
   <ON_BUTTON3_PRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>474</LINE></ON_BUTTON3_PRESSED>
@@ -61,7 +61,7 @@
   <on_button3_pressed_start_timing><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>491</LINE></on_button3_pressed_start_timing>
   <on_button3_nop><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>502</LINE></on_button3_nop>
   <on_time_seup_state_start><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>486</LINE></on_time_seup_state_start>
-  <BUTTON_3_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1318</LINE></BUTTON_3_RPRESSED>
+  <BUTTON_3_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1268</LINE></BUTTON_3_RPRESSED>
   <on_button4_pressed_set_1hour_interval><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>599</LINE></on_button4_pressed_set_1hour_interval>
   <on_button4_out_counting_time><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>605</LINE></on_button4_out_counting_time>
   <on_button4_out_proportion><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>613</LINE></on_button4_out_proportion>
@@ -80,51 +80,50 @@
   <on_button7_pressed_stop_timer_circl_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>680</LINE></on_button7_pressed_stop_timer_circl_end>
   <adding><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>708</LINE></adding>
   <adding_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>714</LINE></adding_end>
-  <DIFERENCE24_16><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>733</LINE></DIFERENCE24_16>
-  <DIFERENCE24><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>758</LINE></DIFERENCE24>
-  <SUM16><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>784</LINE></SUM16>
-  <SUM24_16><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>792</LINE></SUM24_16>
-  <MUL2_24><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>803</LINE></MUL2_24>
-  <float_16_to_str_loop><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>834</LINE></float_16_to_str_loop>
-  <MUL16><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>928</LINE></MUL16>
-  <divide_circle><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>893</LINE></divide_circle>
-  <recov><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>922</LINE></recov>
-  <divide_circle_tail><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>902</LINE></divide_circle_tail>
-  <divide_circle_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>914</LINE></divide_circle_end>
-  <mul16_loop><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>939</LINE></mul16_loop>
-  <mul16_add><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>959</LINE></mul16_add>
-  <mul16_con><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>943</LINE></mul16_con>
-  <mul16_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>952</LINE></mul16_end>
-  <OUT_RESULT><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>991</LINE></OUT_RESULT>
-  <OUT_ADD_RESULT><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>994</LINE></OUT_ADD_RESULT>
-  <TIME_SET><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1296</LINE></TIME_SET>
-  <WAIT><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1246</LINE></WAIT>
-  <SEND_BYTE_COMAND><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1170</LINE></SEND_BYTE_COMAND>
-  <WAIT_SMALL><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1272</LINE></WAIT_SMALL>
-  <FLESH_STR_TO_MEM_STR><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1179</LINE></FLESH_STR_TO_MEM_STR>
-  <FLESH_STR_TO_MEM_STR_LOOP><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1183</LINE></FLESH_STR_TO_MEM_STR_LOOP>
-  <draw2_str><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1225</LINE></draw2_str>
-  <draw2_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1236</LINE></draw2_end>
-  <wait_loop1><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1252</LINE></wait_loop1>
-  <wait_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1265</LINE></wait_end>
-  <wait_loop2><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1256</LINE></wait_loop2>
-  <wait_loop3><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1260</LINE></wait_loop3>
-  <wait_loop11><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1278</LINE></wait_loop11>
-  <wait_end1><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1291</LINE></wait_end1>
-  <wait_loop21><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1282</LINE></wait_loop21>
-  <wait_loop31><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1286</LINE></wait_loop31>
-  <TIME_LEFT><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1306</LINE></TIME_LEFT>
-  <TOTAL_TIME><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1308</LINE></TOTAL_TIME>
-  <BUTTON_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1310</LINE></BUTTON_RPRESSED>
-  <BUTTON_0_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1312</LINE></BUTTON_0_RPRESSED>
-  <BUTTON_1_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1314</LINE></BUTTON_1_RPRESSED>
-  <BUTTON_2_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1316</LINE></BUTTON_2_RPRESSED>
-  <BUTTON_4_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1320</LINE></BUTTON_4_RPRESSED>
-  <BUTTON_5_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1322</LINE></BUTTON_5_RPRESSED>
-  <BUTTON_6_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1324</LINE></BUTTON_6_RPRESSED>
-  <BUTTON_7_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1326</LINE></BUTTON_7_RPRESSED>
-  <HOUR_STR><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1330</LINE></HOUR_STR>
-  <HOURS_STR><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1332</LINE></HOURS_STR>
-  <COUNTING_STOP><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1334</LINE></COUNTING_STOP>
+  <DIFERENCE24><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>733</LINE></DIFERENCE24>
+  <SUM24_16><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>756</LINE></SUM24_16>
+  <MUL2_24><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>767</LINE></MUL2_24>
+  <float_16_to_str_loop><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>798</LINE></float_16_to_str_loop>
+  <MUL16><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>901</LINE></MUL16>
+  <divide_circle><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>857</LINE></divide_circle>
+  <recov><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>895</LINE></recov>
+  <divide_circle_tail><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>875</LINE></divide_circle_tail>
+  <divide_circle_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>887</LINE></divide_circle_end>
+  <mul16_loop><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>912</LINE></mul16_loop>
+  <mul16_add><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>932</LINE></mul16_add>
+  <mul16_con><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>916</LINE></mul16_con>
+  <mul16_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>925</LINE></mul16_end>
+  <OUT_RESULT><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>964</LINE></OUT_RESULT>
+  <OUT_ADD_RESULT><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>967</LINE></OUT_ADD_RESULT>
+  <INT_24_TO_STRING_CORE><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1010</LINE></INT_24_TO_STRING_CORE>
+  <TIME_SET><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1246</LINE></TIME_SET>
+  <WAIT><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1196</LINE></WAIT>
+  <SEND_BYTE_COMAND><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1120</LINE></SEND_BYTE_COMAND>
+  <WAIT_SMALL><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1222</LINE></WAIT_SMALL>
+  <FLESH_STR_TO_MEM_STR><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1129</LINE></FLESH_STR_TO_MEM_STR>
+  <FLESH_STR_TO_MEM_STR_LOOP><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1133</LINE></FLESH_STR_TO_MEM_STR_LOOP>
+  <draw2_str><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1175</LINE></draw2_str>
+  <draw2_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1186</LINE></draw2_end>
+  <wait_loop1><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1202</LINE></wait_loop1>
+  <wait_end><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1215</LINE></wait_end>
+  <wait_loop2><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1206</LINE></wait_loop2>
+  <wait_loop3><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1210</LINE></wait_loop3>
+  <wait_loop11><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1228</LINE></wait_loop11>
+  <wait_end1><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1241</LINE></wait_end1>
+  <wait_loop21><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1232</LINE></wait_loop21>
+  <wait_loop31><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1236</LINE></wait_loop31>
+  <TIME_LEFT><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1256</LINE></TIME_LEFT>
+  <TOTAL_TIME><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1258</LINE></TOTAL_TIME>
+  <BUTTON_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1260</LINE></BUTTON_RPRESSED>
+  <BUTTON_0_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1262</LINE></BUTTON_0_RPRESSED>
+  <BUTTON_1_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1264</LINE></BUTTON_1_RPRESSED>
+  <BUTTON_2_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1266</LINE></BUTTON_2_RPRESSED>
+  <BUTTON_4_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1270</LINE></BUTTON_4_RPRESSED>
+  <BUTTON_5_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1272</LINE></BUTTON_5_RPRESSED>
+  <BUTTON_6_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1274</LINE></BUTTON_6_RPRESSED>
+  <BUTTON_7_RPRESSED><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1276</LINE></BUTTON_7_RPRESSED>
+  <HOUR_STR><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1280</LINE></HOUR_STR>
+  <HOURS_STR><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1282</LINE></HOURS_STR>
+  <COUNTING_STOP><FILE>C:\MC\kursach\Kurs.asm</FILE><LINE>1284</LINE></COUNTING_STOP>
  </LABELS>
 </ASSEMBLER_INFO>
