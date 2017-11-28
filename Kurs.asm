@@ -9,9 +9,9 @@
 ;**********************************************************************************************
 .include "m8515def.inc" ;oaee ii?aaaeaiee ATmega8515 
 
-.equ SECUND = 1 
-.equ FREQUANCY = 4000000 / SECUND 
-.equ FREQUANCY_DIV = 1024 
+.equ SECUND = 1
+.equ FREQUANCY = 8000000 / SECUND 
+.equ FREQUANCY_DIV = 256
 .equ MINUTE = 60 * SECUND 
 .equ HOUR = 60 * MINUTE 
 .equ STRUCT_LEN = 4
@@ -39,11 +39,13 @@
 	rjmp ON_BUTTON_PRESSED_INTERRUPT 
 .org $004
 	rjmp TIMER_A_INTERRUPT
-.org $00C
 	rjmp TIMER_A_INTERRUPT
-.org $00E
 	rjmp TIMER_A_INTERRUPT
-.org $010
+	rjmp TIMER_A_INTERRUPT
+	rjmp TIMER_A_INTERRUPT
+	rjmp TIMER_A_INTERRUPT
+	rjmp TIMER_A_INTERRUPT
+	rjmp TIMER_A_INTERRUPT
 	rjmp TIMER_A_INTERRUPT
 
 
@@ -128,15 +130,15 @@ INIT_INTERRUPT:
 	out PORTC, temp 
 
 ;Iano?ieea oaeia?a 
-	ldi temp, 0xFF
+	ldi temp, 0xFF -4 -8 -16 -32
 	out TIMSK, temp 
 	ldi temp, 0x00 
 	out TCNT1H, temp 
 	out TCNT1L, temp 
 
-	ldi temp, 0x10
+	ldi temp, HIGH(FREQUANCY / FREQUANCY_DIV)
 	out OCR1AH, temp 
-	ldi temp, 0x10
+	ldi temp, LOW(FREQUANCY / FREQUANCY_DIV)
 	out OCR1AL, temp 
 
 	rcall INIT_DISPLAY 
@@ -170,17 +172,12 @@ LOOP:
 
 TIMER_A_INTERRUPT:
 	push temp2
-	ldi temp, 0x00 
-	out TCNT1H, temp 
-	out TCNT1L, temp 
+	ldi temp, 0x00
 
 	sbrc temp2, 3
 	rjmp stop_counting_force
 
-	ldi temp, 0x10
-	out OCR1AH, temp 
-	ldi temp, 0x10
-	out OCR1AL, temp
+
 	ldi temp, 0x03
 
 	pop temp2
@@ -233,7 +230,7 @@ stop_counting:
 	lsl temp2
 	push temp2
 stop_counting_force:
-	ldi temp, 0x00
+	ldi temp, 0
 	out TCCR1B, temp
 	ldi ZL, LOW(FORCE_COUNTING_STOP << 1) 
 	ldi ZH, HIGH(FORCE_COUNTING_STOP <<  1) 
@@ -281,7 +278,6 @@ MINUS24:
 	inc temp6
 	adc temp5, r14
 	adc temp4, r14
-
 
 	add temp3, temp6 
 	adc temp2, temp5
@@ -499,7 +495,7 @@ on_button3_pressed_start_timing:
 	rcall DRAW 
 	ldi temp, 0x00 
 	out TCCR1A, temp 
-	ldi temp, 0x05 
+	ldi temp, 0x04 + 8
 	out TCCR1B, temp
 	ldi temp2, 1 << TIME_COUNTING_STATE 
 	ret
@@ -629,7 +625,7 @@ ON_BUTTON7_PRESSED:
 	sbrc temp2, TIME_INTERVAL_STATE
 	rcall on_button7_nop
 	sbrc temp2, TIME_SETUP_STATE
-	rcall on_button7_pups
+	ldi temp2,1 << TIME_INTERVAL_STATE
 	reti
 on_button7_pressed_get_sum:
 	push temp2
@@ -656,9 +652,6 @@ on_button7_pressed_get_sum:
 	pop temp2
 	ret
 
-on_button7_pups:
-	ldi temp2,1 << TIME_INTERVAL_STATE
-	ret
 
 on_button7_pressed_stop_timer:
 	push temp2
@@ -735,18 +728,6 @@ adding_end:
 ;temp4-LByte
 ;temp1-OutHByte
 ;temp2-OutLByte
-DIFERENCE16:
-	push temp3
-	push temp4
-	add temp4, r15 
-	adc temp3, r15 
-	com temp4 
-	com temp3 
-	add temp2, temp4 
-	adc temp1, temp3 
-	pop temp4
-	pop temp3
-	ret 
 
 
 DIFERENCE24_16:
@@ -1017,6 +998,7 @@ ret
 ;old;Z+1-LOW
 ;...-used 
 ;Z+X-out data str 
+
 INT24_TO_TIME_STRING:
 	rcall PUSHA
 	push ZH
@@ -1041,7 +1023,6 @@ INT24_TO_TIME_STRING:
 	ldi temp3, LOW(60 * 60)
 	std Z+3, temp3
 	rcall MUL16
-	;[div result]:[div result * 60 * 60]
 	ldd temp3, Z+4
 	ldd temp4, Z+2
 	push temp5
@@ -1049,7 +1030,7 @@ INT24_TO_TIME_STRING:
 	rcall DIFERENCE24
 	pop temp5
 
-	
+
 	std Z+0, temp0
 	std Z+1, temp1
 	std Z+2, temp2
