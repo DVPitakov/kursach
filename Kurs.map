@@ -1,5 +1,13 @@
 
-AVRASM ver. 2.1.42  C:\MC\kursach\Kurs.asm Sun Dec 03 00:17:28 2017
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+AVRASM ver. 2.1.42  C:\MC\kursach\Kurs.asm Mon Dec 04 15:06:43 2017
+=======
+AVRASM ver. 2.1.42  C:\MC\kursach\Kurs.asm Mon Dec 04 15:02:44 2017
+>>>>>>> Stashed changes
+=======
+AVRASM ver. 2.1.42  C:\MC\kursach\Kurs.asm Mon Dec 04 15:02:44 2017
+>>>>>>> Stashed changes
 
 
 EQU  SIGNATURE_000 0000001e
