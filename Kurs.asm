@@ -215,23 +215,16 @@ stop_counting_force:
 ;Z012 - первое число и результат
 ;Z345 - второе число
 ;Zx старше Zx+1
-ADD_MINUS_CORE:
+
+
+ADD24:
+	rcall PUSHA
 	ldd temp1, Z+0 
 	ldd temp2, Z+1 
 	ldd temp3, Z+2 
 	ldd temp4, Z+3 
 	ldd temp5, Z+4
 	ldd temp6, Z+5
-	tst temp7
-	brne add_minus_core_prop
-	com temp4
-	com temp5
-	com temp6
-	inc temp6
-	adc temp5, r14
-	adc temp4, r14
-
-add_minus_core_prop:
 	add temp3, temp6 
 	adc temp2, temp5
 	adc temp1, temp4
@@ -240,11 +233,6 @@ add_minus_core_prop:
 	std Z+2, temp3 
 	rcall POPALL
 	ret 
-
-ADD24:
-	rcall PUSHA
-	ldi temp7, 0x01
-	rjmp ADD_MINUS_CORE
 
 ADD16: 
 	ldd temp1, Z+0 
