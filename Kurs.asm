@@ -95,9 +95,7 @@ TROLLEY_TIMER012:
 
 INIT_INTERRUPT: 
 	ldi temp, (1 << SE) | (2 << ISC00)
-	out MCUCR, temp 
-	ldi temp8, 0xFF
-	mov r15, temp8  
+	out MCUCR, temp   
 	ldi temp,low(RAMEND) 
 	out SPL,temp 
 	ldi temp,high(RAMEND) 
@@ -838,8 +836,8 @@ INT24_TO_TIME_STRING:
 	ldi temp4, 0x08
 	mov r10, temp3
 	mov r11, temp4
-	mov r13, ZL
-	mov r12, ZH
+	mov YL, ZL
+	mov YH, ZH
 	add r11, ZL
 	adc r10, ZH
 	ldi temp4, HIGH(60 * 60)
@@ -888,13 +886,13 @@ __16_41:
 	lpm temp1, Z+0
 	lpm temp2, Z+1
 	ldi temp, ':'
-	mov ZL, r13
-	mov ZH, r12
+	mov ZL, YL
+	mov ZH, YH
 	st Z+, temp1
 	st Z+, temp2
 	st Z+, temp
-	mov r12, ZH
-	mov r13, ZL
+	mov YH, ZH
+	mov YL, ZL
 	pop ZL
 	pop ZH
 	pop temp
