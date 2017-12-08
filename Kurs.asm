@@ -259,13 +259,16 @@ add_16_cont:
 r2253:
 	ret 
 
-if_minus: 
+if_minus:
+	push temp
+	ldi temp, 0xFF 
 	add temp4, temp1 
-	adc temp3, r15
-	adc temp2, r15
+	adc temp3, temp
+	adc temp2, temp
 	std Z+1, temp2 
 	std Z+2, temp3 
 	std Z+3, temp4
+	pop temp
 	rjmp add_16_cont
 
 ;temp from what
