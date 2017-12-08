@@ -241,9 +241,12 @@ ADD16:
 	ldd temp4, Z+3
 	tst temp1
 	brmi if_minus
-	add temp4, temp1 
-	adc temp3, r14
-	adc temp2, r14
+	add temp4, temp1
+	brcc add_16_i 
+	inc temp3
+	brcc add_16_i
+	inc temp2
+add_16_i:
 
 ADD16_END: 
 	std Z+1, temp2
