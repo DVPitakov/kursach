@@ -457,7 +457,9 @@ rr_t1:
 	push temp1
 	ldi temp1, STRUCT_LEN
 	add ZL, temp1
-	adc ZH, r14
+	brcc rr_t1_i
+	inc ZH
+	rr_t1_i:
 	pop temp1
 	dec temp4
 	brne rr_t1
