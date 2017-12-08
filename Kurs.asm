@@ -96,9 +96,7 @@ TROLLEY_TIMER012:
 INIT_INTERRUPT: 
 	ldi temp, (1 << SE) | (2 << ISC00)
 	out MCUCR, temp 
-	ldi temp7, 0x00 
 	ldi temp8, 0xFF
-	mov r14, temp7
 	mov r15, temp8  
 	ldi temp,low(RAMEND) 
 	out SPL,temp 
@@ -739,7 +737,9 @@ divide_circle:
 	pop temp4
 	pop temp5 
 	brmi recov
-	adc temp8, r14
+	brcc divide_circle_tail
+	inc temp8
+	divide_circle_i:
 divide_circle_tail:
 	std Z+7, temp
 	ldd temp, Z+6
@@ -870,9 +870,13 @@ INT_24_TO_STRING_CORE:
 	ldi ZH, HIGH(TIME_SET << 1)
 	ldi ZL, LOW(TIME_SET << 1)
 	add ZL, temp3
-	adc ZH, r14
+	brcc __16_40
+	inc ZH
+__16_40:
 	add ZL, temp3
-	adc ZH, r14
+	brcc __16_41
+	inc ZH
+__16_41:
 	push temp1
 	push temp2
 	push temp
