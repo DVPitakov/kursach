@@ -329,8 +329,9 @@ draw_current_time_adding_end:
 	ldd temp, Z+1
 	ldd temp1, Z+2
 	ldd temp2, Z+3
-	ldi ZH, HIGH(9 * STRUCT_LEN + MEM_START) 
-	ldi ZL, LOW(9 * STRUCT_LEN + MEM_START)
+	;__1651
+	ldi ZH, HIGH(0) 
+	ldi ZL, LOW(0)
 	
 	std Z+0, temp
 	std Z+1, temp1
@@ -833,7 +834,7 @@ INT24_TO_TIME_STRING:
 	ldd temp1, Z+1
 	ldd temp2, Z+2
 	ldi temp3, 0x00
-	ldi temp4, 0x08
+	ldi temp4, 0x07
 	mov r14, temp3
 	mov r15, temp4
 	mov YL, ZL
