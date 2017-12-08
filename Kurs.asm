@@ -834,12 +834,12 @@ INT24_TO_TIME_STRING:
 	ldd temp2, Z+2
 	ldi temp3, 0x00
 	ldi temp4, 0x08
-	mov r10, temp3
-	mov r11, temp4
+	mov r14, temp3
+	mov r15, temp4
 	mov YL, ZL
 	mov YH, ZH
-	add r11, ZL
-	adc r10, ZH
+	add r15, ZL
+	adc r14, ZH
 	ldi temp4, HIGH(60 * 60)
 	ldi temp5, LOW(60 * 60)
 	rcall INT_24_TO_STRING_CORE
@@ -857,8 +857,8 @@ INT24_TO_TIME_STRING:
 	ret 
 
 INT_24_TO_STRING_CORE:
-	mov ZL, r11
-	mov ZH, r10
+	mov ZL, r15
+	mov ZH, r14
 	std Z+0, temp0
 	std Z+1, temp1
 	std Z+2, temp2
@@ -898,8 +898,8 @@ __16_41:
 	pop temp
 	pop temp2
 	pop temp1
-	mov ZL, r11
-	mov ZH, r10
+	mov ZL, r15
+	mov ZH, r14
 	std Z+2, temp4
 	std Z+3, temp5
 	rcall MUL16
